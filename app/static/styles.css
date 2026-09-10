@@ -229,6 +229,23 @@ textarea { resize: vertical; min-height: 84px; }
   font-size: 13px; color: var(--muted); }
 .inicio-toggle input { width: auto; }
 
+/* Acordeón de categorías en gráficos */
+.cat-acc { border-bottom: 1px solid var(--line); }
+.cat-acc-head { width: 100%; display: flex; align-items: center; gap: 10px;
+  background: none; border: 0; cursor: pointer; padding: 12px 2px; text-align: left;
+  font-size: 14px; color: var(--text); }
+.cat-acc-head:hover { background: var(--line); border-radius: 8px; }
+.cat-acc-name { font-weight: 600; }
+.cat-acc-count { font-size: 12px; }
+.cat-acc-amt { margin-left: auto; font-weight: 700; }
+.cat-acc-chevron { font-size: 10px; color: var(--muted); width: 14px; text-align: center; }
+.cat-tx { display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 6px 7px 24px; font-size: 13.5px; border-top: 1px solid var(--line); }
+.cat-tx-main { display: flex; flex-direction: column; }
+.cat-tx-concept { }
+.cat-tx-sub { font-size: 11.5px; }
+.cat-tx-amt { font-weight: 600; white-space: nowrap; padding-left: 12px; }
+
 /* Filtros de movimientos */
 .filter-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 
