@@ -32,23 +32,23 @@
   <a class="link" href="/cuentas">Ver cuentas</a>
 </div>
 <div class="hero" style="margin-bottom:30px">
-  <div class="hero-grid">
-    <div>
-      <div class="lbl">{{ icon('bank',15)|safe }} Saldo {{ (accts[0][0].nombre if accts else 'Cuenta común') }}</div>
-      <div class="big">{{ common_balance | eur }}</div>
-      <div class="note">Dinero líquido disponible ahora.</div>
+  {% if home_rows %}
+  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
+  <div class="big">{{ home_total | eur }}</div>
+  <div class="note">Suma de las cuentas que has elegido mostrar aquí.</div>
+  <div class="home-accts">
+    {% for a, saldo in home_rows %}
+    <div class="home-acct">
+      <div class="lbl">{{ icon('piggy' if a.tipo=='ahorro' else 'bank',14)|safe }} {{ a.nombre }}</div>
+      <div class="mid">{{ saldo | eur }}</div>
     </div>
-    <div>
-      <div class="lbl">{{ icon('piggy',15)|safe }} Saldo Ahorros / Inversión</div>
-      <div class="mid">{{ savings_balance | eur }}</div>
-      <div class="lbl" style="margin-top:14px">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
-      <div class="mid">{{ patrimonio | eur }}</div>
-    </div>
+    {% endfor %}
   </div>
-  <div class="hero-foot">
-    <span>Ahorro aportado durante {{ anio }}</span>
-    <strong>{{ ahorro | eur }}</strong>
-  </div>
+  {% else %}
+  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
+  <div class="big">{{ 0 | eur }}</div>
+  <div class="note">No has marcado ninguna cuenta para el inicio. Elígelas en <a class="link" href="/cuentas">Cuentas</a>.</div>
+  {% endif %}
 </div>
 
 <!-- Actividad del periodo -->
