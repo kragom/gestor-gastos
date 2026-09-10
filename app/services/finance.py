@@ -99,6 +99,19 @@ def spend_by_category(db: Session, user_id: int, start: date, end: date):
     return result, round(total, 2)
 
 
+def transactions_by_category(db: Session, user_id: int, start: date, end: date):
+    """Devuelve {category_id: [transacciones de gasto]} del periodo,
+    cada lista ordenada de mayor a menor importe."""
+    rows = (db.query(Transaction)
+            .filter(Transaction.user_id == user_id, Transaction.tipo == "gasto",
+                    Transaction.fecha >= start, Transaction.fecha <= end)
+            .order_by(Transaction.importe.desc()).all())
+    out: dict = {}
+    for t in rows:
+        out.setdefault(t.category_id, []).append(t)
+    return out
+
+
 def pending_reintegrables(db: Session, user_id: int):
     rows = (db.query(Transaction)
             .filter(Transaction.user_id == user_id,
