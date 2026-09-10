@@ -39,10 +39,7 @@ def dashboard(request: Request, mode: str = "month", period: str | None = None,
     m, anio, mes, start, end = parse_period(mode, period)
 
     accts, patrimonio = finance.net_worth(db, user.id)
-    common = finance.primary_account(db, user.id)
-    common_balance = finance.account_balance(db, common) if common else 0.0
-    savings = finance.savings_accounts(db, user.id)
-    savings_balance = round(sum(finance.account_balance(db, a) for a in savings), 2)
+    home_rows, home_total = finance.home_accounts(db, user.id)
 
     ingresos, gastos, balance = finance.period_totals(db, user.id, start, end)
     ahorro = savings_income(db, user.id, start, end)
@@ -67,7 +64,7 @@ def dashboard(request: Request, mode: str = "month", period: str | None = None,
         "mode": m, "anio": anio, "mes": mes, "period": period_str,
         "prev": shift_period(m, anio, mes, -1), "next": shift_period(m, anio, mes, 1),
         "accts": accts, "patrimonio": patrimonio,
-        "common_balance": common_balance, "savings_balance": savings_balance,
+        "home_rows": home_rows, "home_total": home_total,
         "ingresos": ingresos, "gastos": gastos, "balance": balance, "ahorro": ahorro,
         "dist": dist, "dist_total": dist_total,
         "reint_total": reint_total, "reint_count": len(reint_rows),
