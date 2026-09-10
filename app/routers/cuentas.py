@@ -48,3 +48,12 @@ def archivar(aid: int, db: Session = Depends(get_db), user: User = Depends(requi
         a.activa = not a.activa
         save(db)
     return RedirectResponse("/cuentas", status_code=303)
+
+
+@router.post("/cuentas/{aid}/inicio")
+def toggle_inicio(aid: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
+    a = db.query(Account).filter(Account.id == aid, Account.user_id == user.id).first()
+    if a:
+        a.mostrar_inicio = not a.mostrar_inicio
+        save(db)
+    return RedirectResponse("/cuentas", status_code=303)
