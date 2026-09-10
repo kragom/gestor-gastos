@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Reintegrables · Balance{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Dinero que vuelve</div>
+    <h1 class="page-title">Reintegrables</h1>
+    <p class="page-sub">Gastos que adelantas y esperas recuperar. No alteran tu ahorro real.</p>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:26px; gap:18px">
+  <div class="stat"><div class="st-top">Pendiente de reintegrar {{ icon('refresh',16)|safe }}</div>
+    <div class="st-val amt-neg">{{ total_pend | eur }}</div>
+    <small class="muted">{{ pendientes|length }} movimientos</small></div>
+  <div class="stat"><div class="st-top">Ya reintegrado {{ icon('coins',16)|safe }}</div>
+    <div class="st-val amt-pos">{{ total_sald | eur }}</div>
+    <small class="muted">{{ saldados|length }} movimientos</small></div>
+</div>
+
+<h3 style="font-size:18px; margin-bottom:12px">Pendientes</h3>
+{% if pendientes %}
+{% for t in pendientes %}
+<div class="mov">
+  <span class="mov-ic" style="background:{{ (t.category.color if t.category else '#6b7280') }}22; color:{{ (t.category.color if t.category else '#6b7280') }}">
+    {{ icon(t.category.icono if t.category else 'refresh', 20)|safe }}</span>
+  <div class="mov-body">
+    <div class="mov-title">{{ t.concepto }}</div>
+    <div class="mov-sub">{{ t.fecha.strftime('%d/%m/%Y') }} · {{ t.account.nombre }}</div>
+  </div>
+  <div class="mov-amt amt-neg">{{ t.importe | eur }}</div>
+  <form method="post" action="/reintegrables/{{ t.id }}/toggle">
+    <button class="btn btn-sm btn-primary" type="submit">Marcar reintegrado</button>
+  </form>
+</div>
+{% endfor %}
+{% else %}
+<div class="card empty">{{ icon('sparkles',30)|safe }}<p>No tienes reintegrables pendientes.</p></div>
+{% endif %}
+
+{% if saldados %}
+<h3 style="font-size:18px; margin:26px 0 12px">Saldados</h3>
+{% for t in saldados %}
+<div class="mov" style="opacity:.7">
+  <span class="mov-ic" style="background:{{ (t.category.color if t.category else '#6b7280') }}22; color:{{ (t.category.color if t.category else '#6b7280') }}">
+    {{ icon(t.category.icono if t.category else 'coins', 20)|safe }}</span>
+  <div class="mov-body">
+    <div class="mov-title">{{ t.concepto }} <span class="badge badge-green">reintegrado</span></div>
+    <div class="mov-sub">{{ t.fecha.strftime('%d/%m/%Y') }} · {{ t.account.nombre }}</div>
+  </div>
+  <div class="mov-amt">{{ t.importe | eur }}</div>
+  <form method="post" action="/reintegrables/{{ t.id }}/toggle">
+    <button class="btn btn-sm" type="submit">Reabrir</button>
+  </form>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}

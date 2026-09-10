@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Gastos extraordinarios · Balance{% endblock %}
+{% block content %}
+<div x-data="{ modal:false }">
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Previsión</div>
+    <h1 class="page-title">Gastos extraordinarios</h1>
+    <p class="page-sub">Anticipa seguros, impuestos o regalos que no ocurren cada mes.</p>
+  </div>
+  <button class="btn btn-primary" @click="modal=true">+ Añadir previsión</button>
+</div>
+
+{% set total = rows | sum(attribute='importe') %}
+<div class="grid grid-2" style="margin-bottom:26px; gap:18px">
+  <div class="stat"><div class="st-top">Previsto total {{ icon('receipt',16)|safe }}</div>
+    <div class="st-val">{{ total | eur }}</div><small class="muted">{{ rows|length }} previsiones</small></div>
+  <div class="stat"><div class="st-top">Reserva mensual sugerida {{ icon('piggy',16)|safe }}</div>
+    <div class="st-val">{{ (total / 12) | eur }}</div><small class="muted">repartido en 12 meses</small></div>
+</div>
+
+{% if rows %}
+<div class="card">
+  {% for e in rows %}
+  <div class="mov" style="border-bottom:1px solid var(--line)">
+    <span class="mov-ic" style="background:#1f5c4622; color:#1f5c46">{{ icon('receipt',20)|safe }}</span>
+    <div class="mov-body">
+      <div class="mov-title">{{ e.nombre }}
+        {% if e.repite_anual %}<span class="tag-badge">anual</span>{% endif %}</div>
+      <div class="mov-sub">{{ month_name(e.mes, e.anio) }}{% if e.notas %} · {{ e.notas }}{% endif %}</div>
+    </div>
+    <div class="mov-amt">{{ e.importe | eur }}</div>
+    <form method="post" action="/gastos-extraordinarios/{{ e.id }}/borrar"
+          onsubmit="return confirm('¿Borrar esta previsión?')">
+      <button class="btn btn-ghost btn-icon" type="submit" style="color:var(--danger)">✕</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty">{{ icon('receipt',34)|safe }}<p>Aún no has añadido previsiones extraordinarias.</p></div>
+{% endif %}
+
+<template x-if="modal">
+  <div class="modal-back" @click.self="modal=false">
+    <div class="modal">
+      <div class="row-between"><h3>Nueva previsión</h3>
+        <button class="btn btn-ghost btn-icon" @click="modal=false">✕</button></div>
+      <form method="post" action="/gastos-extraordinarios/nuevo" class="mt">
+        <label class="field"><span>Nombre</span><input name="nombre" required placeholder="Seguro del coche"></label>
+        <div class="grid grid-2" style="gap:12px">
+          <label class="field"><span>Mes</span>
+            <select name="mes">{% for i in range(1,13) %}
+              <option value="{{ i }}" {{ 'selected' if i==mes_actual }}>{{ MESES[i-1]|capitalize }}</option>{% endfor %}</select></label>
+          <label class="field"><span>Año</span><input name="anio" type="number" value="{{ anio_actual }}"></label>
+        </div>
+        <label class="field"><span>Importe</span><input name="importe" type="number" step="0.01" required></label>
+        <label class="field"><span>Notas</span><textarea name="notas"></textarea></label>
+        <label class="field" style="display:flex; align-items:center; gap:8px">
+          <input type="checkbox" name="repite_anual" value="1" style="width:auto">
+          <span style="margin:0">Se repite cada año</span></label>
+        <div class="text-right"><button class="btn btn-primary" type="submit">Guardar</button></div>
+      </form>
+    </div>
+  </div>
+</template>
+</div>
+{% endblock %}

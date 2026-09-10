@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Movimientos · Balance{% endblock %}
+{% block content %}
+<div x-data="{ modal:false, edit:null,
+     open(d){ this.edit=d; this.modal=true },
+     nuevo(){ this.edit=null; this.modal=true } }">
+
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Actividad</div>
+    <h1 class="page-title">Movimientos</h1>
+    <p class="page-sub">Tu histórico ordenado, localizable y siempre separado por tipo.</p>
+  </div>
+  <button class="btn btn-primary" @click="nuevo()">+ Añadir</button>
+</div>
+
+<form method="get" action="/movimientos" class="card" style="margin-bottom:18px">
+  <div class="flex gap" style="margin-bottom:14px">
+    <input type="text" name="q" value="{{ f.q }}" placeholder="Buscar por concepto...">
+    <button class="btn" type="submit">Buscar</button>
+  </div>
+  <div class="grid" style="grid-template-columns:repeat(5,1fr); gap:12px">
+    <label class="field"><span>Tipo</span>
+      <select name="tipo">
+        <option value="">Todos</option>
+        <option value="gasto" {{ 'selected' if f.tipo=='gasto' }}>Gastos</option>
+        <option value="ingreso" {{ 'selected' if f.tipo=='ingreso' }}>Ingresos</option>
+      </select></label>
+    <label class="field"><span>Cuenta</span>
+      <select name="cuenta"><option value="">Todas</option>
+        {% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if f.cuenta==a.id|string }}>{{ a.nombre }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Categoría</span>
+      <select name="categoria"><option value="">Todas</option>
+        {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if f.categoria==c.id|string }}>{{ c.nombre }}</option>{% endfor %}
+      </select></label>
+    <label class="field"><span>Desde</span><input type="date" name="desde" value="{{ f.desde }}"></label>
+    <label class="field"><span>Hasta</span><input type="date" name="hasta" value="{{ f.hasta }}"></label>
+  </div>
+  <div class="text-right"><button class="btn btn-primary" type="submit">Aplicar filtros</button></div>
+</form>
+
+<div class="row-between" style="margin-bottom:6px">
+  <small>La exportación respeta la búsqueda y los filtros activos.</small>
+  <div class="flex gap">
+    <a class="btn btn-sm" href="/movimientos/export?fmt=csv&q={{ f.q }}&tipo={{ f.tipo }}&cuenta={{ f.cuenta }}&categoria={{ f.categoria }}&desde={{ f.desde }}&hasta={{ f.hasta }}">↓ CSV</a>
+    <a class="btn btn-sm" href="/movimientos/export?fmt=excel&q={{ f.q }}&tipo={{ f.tipo }}&cuenta={{ f.cuenta }}&categoria={{ f.categoria }}&desde={{ f.desde }}&hasta={{ f.hasta }}">↓ Excel</a>
+  </div>
+</div>
+
+{% if grouped %}
+  {% for day, items in grouped %}
+  <div class="mov-group-title">{{ day.strftime('%A, %d de %B de %Y') }}</div>
+    {% for t in items %}
+    <div class="mov">
+      <span class="mov-ic" style="background:{{ (t.category.color if t.category else '#6b7280') }}22; color:{{ (t.category.color if t.category else '#6b7280') }}">
+        {{ icon(t.category.icono if t.category else 'tag', 20)|safe }}</span>
+      <div class="mov-body">
+        <div class="mov-title">{{ t.concepto }}
+          <span class="badge {{ 'badge-green' if t.tipo=='ingreso' }}">{{ t.tipo|upper }}</span>
+          {% if t.es_reintegrable %}<span class="tag-badge">reintegrable</span>{% endif %}
+        </div>
+        <div class="mov-sub">{{ t.account.nombre }} · {{ t.category.nombre if t.category else 'Sin categoría' }}</div>
+      </div>
+      <div class="mov-amt {{ 'amt-pos' if t.tipo=='ingreso' else 'amt-neg' }}">
+        {{ '+' if t.tipo=='ingreso' else '−' }}{{ t.importe | eur }}</div>
+      <button class="btn btn-ghost btn-icon" @click='open({{ {"id":t.id,"concepto":t.concepto,"importe":t.importe,"tipo":t.tipo,"account_id":t.account_id,"category_id":t.category_id,"fecha":t.fecha.isoformat(),"nota":t.nota,"es_reintegrable":t.es_reintegrable,"reintegrado":t.reintegrado} | tojson }})'>⋯</button>
+    </div>
+    {% endfor %}
+  {% endfor %}
+{% else %}
+  <div class="card empty">{{ icon('list',34)|safe }}<p>No hay movimientos con estos filtros.</p></div>
+{% endif %}
+
+<!-- Modal alta/edición -->
+<template x-if="modal">
+  <div class="modal-back" @click.self="modal=false">
+    <div class="modal">
+      <div class="row-between"><h3 x-text="edit ? 'Editar movimiento' : 'Nuevo movimiento'"></h3>
+        <button class="btn btn-ghost btn-icon" @click="modal=false">✕</button></div>
+      <form method="post" :action="edit ? '/movimientos/'+edit.id+'/editar' : '/movimientos/nuevo'" class="mt">
+        <label class="field"><span>Concepto</span>
+          <input name="concepto" required :value="edit?edit.concepto:''"></label>
+        <div class="grid grid-2" style="gap:12px">
+          <label class="field"><span>Importe</span>
+            <input name="importe" type="number" step="0.01" required :value="edit?edit.importe:''"></label>
+          <label class="field"><span>Tipo</span>
+            <select name="tipo" x-init="$nextTick(()=>{ if(edit) $el.value=edit.tipo })">
+              <option value="gasto">Gasto</option><option value="ingreso">Ingreso</option></select></label>
+        </div>
+        <div class="grid grid-2" style="gap:12px">
+          <label class="field"><span>Cuenta</span>
+            <select name="account_id" required x-init="$nextTick(()=>{ if(edit) $el.value=edit.account_id })">
+              {% for a in accounts %}<option value="{{ a.id }}">{{ a.nombre }}</option>{% endfor %}</select></label>
+          <label class="field"><span>Categoría</span>
+            <select name="category_id" x-init="$nextTick(()=>{ if(edit&&edit.category_id) $el.value=edit.category_id })">
+              <option value="">Sin categoría</option>
+              {% for c in categories %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}</select></label>
+        </div>
+        <div class="grid grid-2" style="gap:12px">
+          <label class="field"><span>Fecha</span>
+            <input name="fecha" type="date" :value="edit?edit.fecha:'{{ today().isoformat() }}'"></label>
+          <label class="field" style="display:flex; align-items:flex-end; gap:8px; padding-bottom:12px">
+            <input type="checkbox" name="es_reintegrable" value="1" style="width:auto" x-init="$nextTick(()=>{ if(edit) $el.checked=edit.es_reintegrable })">
+            <span style="margin:0">Reintegrable</span></label>
+        </div>
+        <label class="field"><span>Nota</span><textarea name="nota" x-text="edit?edit.nota:''"></textarea></label>
+        <template x-if="edit">
+          <label class="field" style="display:flex; align-items:center; gap:8px">
+            <input type="checkbox" name="reintegrado" value="1" style="width:auto" x-init="$nextTick(()=>{ if(edit) $el.checked=edit.reintegrado })">
+            <span style="margin:0">Ya reintegrado</span></label>
+        </template>
+        <div class="flex gap" style="justify-content:space-between; margin-top:8px">
+          <template x-if="edit">
+            <button type="button" class="btn" style="color:var(--danger)"
+              @click="if(confirm('¿Borrar este movimiento?')){ document.getElementById('delform').submit() }">Borrar</button>
+          </template>
+          <button class="btn btn-primary" type="submit" style="margin-left:auto">Guardar</button>
+        </div>
+      </form>
+      <template x-if="edit">
+        <form :action="'/movimientos/'+edit.id+'/borrar'" method="post" id="delform"></form>
+      </template>
+    </div>
+  </div>
+</template>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Inicio · Balance{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Tu economía, de un vistazo</div>
+    <h1 class="page-title">Hola, {{ user.nombre.split(' ')[0] }}</h1>
+    <p class="page-sub">Saldos reales y actividad del periodo, claramente separados.</p>
+  </div>
+  <a class="btn btn-primary" href="/movimientos">+ Añadir movimiento</a>
+</div>
+
+<!-- Selector de periodo -->
+<div class="flex items-center justify-between gap" style="flex-wrap:wrap; margin-bottom:22px">
+  <div class="segmented">
+    <a href="/?mode=month&period={{ '%04d-%02d'|format(anio, mes) if mes else period }}" class="{{ 'on' if mode=='month' else '' }}">Mes</a>
+    <a href="/?mode=year&period={{ anio }}" class="{{ 'on' if mode=='year' else '' }}">Año</a>
+  </div>
+  <div class="period-nav">
+    <a class="btn btn-icon" href="/?mode={{ mode }}&period={{ prev }}">‹</a>
+    <span class="period-pill">{{ month_name(mes, anio) if mes else anio }}</span>
+    <a class="btn btn-icon" href="/?mode={{ mode }}&period={{ next }}">›</a>
+  </div>
+</div>
+
+<!-- Saldos actuales -->
+<div class="row-between" style="margin-bottom:10px">
+  <div>
+    <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.05em">Situación financiera</div>
+    <h3 style="font-size:20px">Saldos actuales</h3>
+  </div>
+  <a class="link" href="/cuentas">Ver cuentas</a>
+</div>
+<div class="hero" style="margin-bottom:30px">
+  <div class="hero-grid">
+    <div>
+      <div class="lbl">{{ icon('bank',15)|safe }} Saldo {{ (accts[0][0].nombre if accts else 'Cuenta común') }}</div>
+      <div class="big">{{ common_balance | eur }}</div>
+      <div class="note">Dinero líquido disponible ahora.</div>
+    </div>
+    <div>
+      <div class="lbl">{{ icon('piggy',15)|safe }} Saldo Ahorros / Inversión</div>
+      <div class="mid">{{ savings_balance | eur }}</div>
+      <div class="lbl" style="margin-top:14px">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
+      <div class="mid">{{ patrimonio | eur }}</div>
+    </div>
+  </div>
+  <div class="hero-foot">
+    <span>Ahorro aportado durante {{ anio }}</span>
+    <strong>{{ ahorro | eur }}</strong>
+  </div>
+</div>
+
+<!-- Actividad del periodo -->
+<div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.05em">Actividad del periodo</div>
+<h3 style="font-size:20px; margin-bottom:14px">{{ month_name(mes, anio) if mes else anio }}</h3>
+<div class="grid grid-4" style="margin-bottom:30px">
+  <div class="stat"><div class="st-top">Ingresos {{ icon('chart',16)|safe }}</div><div class="st-val amt-pos">{{ ingresos | eur }}</div></div>
+  <div class="stat"><div class="st-top">Gastos {{ icon('chart',16)|safe }}</div><div class="st-val">{{ gastos | eur }}</div></div>
+  <div class="stat"><div class="st-top">Balance del periodo {{ icon('refresh',16)|safe }}</div><div class="st-val">{{ balance | eur }}</div></div>
+  <div class="stat"><div class="st-top">Ahorro aportado {{ icon('piggy',16)|safe }}</div><div class="st-val">{{ ahorro | eur }}</div></div>
+</div>
+
+<!-- Distribución + presupuesto -->
+<div class="grid grid-main" style="margin-bottom:30px">
+  <div class="card">
+    <div class="row-between" style="margin-bottom:10px">
+      <div>
+        <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Distribución del gasto</div>
+        <h3 style="font-size:19px">¿Dónde se ha ido el dinero?</h3>
+      </div>
+      <a class="link" href="/graficos">Analizar</a>
+    </div>
+    {% if dist %}
+    <div class="flex items-center gap" style="flex-wrap:wrap; gap:24px">
+      <div class="donut-wrap">
+        <canvas id="donut"></canvas>
+        <div class="donut-center">
+          <div class="dc-lbl">{{ dist[0].nombre }}</div>
+          <div class="dc-val">{{ dist[0].importe | eur }}</div>
+          <div class="dc-lbl">{{ dist[0].pct }} %</div>
+        </div>
+      </div>
+      <div class="dist-list" style="flex:1; min-width:220px">
+        {% for d in dist %}
+        <div class="dist-row">
+          <span class="dot" style="background:{{ d.color }}"></span>
+          <span class="dist-name">{{ d.nombre }}</span>
+          <span><div class="dist-amt">{{ d.importe | eur }}</div><div class="dist-pct">{{ d.pct }} %</div></span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% else %}
+    <div class="empty">{{ icon('chart',34)|safe }}<p>Sin gastos en este periodo.</p></div>
+    {% endif %}
+  </div>
+
+  <div class="grid" style="gap:18px">
+    <div class="card-2">
+      <div class="row-between">
+        <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Presupuesto mensual</div>
+        {{ icon('calendar',18)|safe }}
+      </div>
+      {% if budget %}
+      <div class="st-val" style="font-size:24px; margin:6px 0">{{ budget.gastado | eur }} <span style="font-size:14px; font-weight:500; color:var(--muted)">gastados</span></div>
+      {% set pct = (budget.gastado / budget.presupuesto * 100) if budget.presupuesto else 0 %}
+      <p class="muted" style="font-size:13px">de {{ budget.presupuesto | eur }} presupuestados
+        {% if budget.disponible < 0 %}· {{ (-budget.disponible) | eur }} por encima{% endif %}</p>
+      <div class="progress {{ 'over' if pct > 100 else '' }}" style="margin:10px 0">
+        <span style="width:{{ [pct,100]|min }}%"></span>
+      </div>
+      <div class="row-between"><small>{{ pct|round(0)|int }} % consumido</small><a class="link" href="/presupuestos">Ver detalle</a></div>
+      {% else %}
+      <p class="muted">Selecciona un mes para ver el presupuesto.</p>
+      {% endif %}
+    </div>
+
+    <div class="card-2">
+      <div class="flex items-center gap">
+        {{ icon('refresh',20)|safe }}
+        <div><div class="muted" style="font-size:13px">Pendiente de reintegrar</div>
+          <div class="st-val" style="font-size:22px">{{ reint_total | eur }}</div></div>
+      </div>
+      <p class="muted" style="font-size:12.5px; margin-top:6px">{{ reint_count }} movimientos pendientes · no altera el ahorro</p>
+      <a class="link" href="/reintegrables">Ver reintegrables</a>
+    </div>
+  </div>
+</div>
+
+{% if mes %}
+<div class="card-2 row-between" style="align-items:center">
+  <div class="flex items-center gap">
+    {{ icon('calendar',20)|safe }}
+    <div><strong>¿Has terminado el mes?</strong>
+      <div class="muted" style="font-size:12.5px">El cierre es un asistente reversible y no bloquea movimientos.</div></div>
+  </div>
+  <form method="post" action="/cerrar-mes?anio={{ anio }}&mes={{ mes }}">
+    <button class="btn" type="submit">{{ 'Reabrir mes' if cerrado else 'Cerrar mes' }}</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  Balance.donut('donut',
+    {{ dist | map(attribute='nombre') | list | tojson }},
+    {{ dist | map(attribute='importe') | list | tojson }},
+    {{ dist | map(attribute='color') | list | tojson }});
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Gráficos · Balance{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Análisis financiero</div>
+    <h1 class="page-title">Gráficos</h1>
+    <p class="page-sub">Tendencias y desviaciones calculadas en servidor.</p>
+  </div>
+  <form method="get" action="/graficos">
+    <label class="field" style="margin:0"><span>Año analizado</span>
+      <input type="number" name="anio" value="{{ anio }}" onchange="this.form.submit()" style="width:120px"></label>
+  </form>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:18px">
+  <div class="card">
+    <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Distribución · {{ anio }}</div>
+    <h3 style="font-size:19px; margin-bottom:14px">Gasto por categoría</h3>
+    {% if dist %}
+    <div class="flex items-center gap" style="flex-wrap:wrap; gap:24px">
+      <div class="donut-wrap"><canvas id="donut"></canvas>
+        <div class="donut-center"><div class="dc-lbl">Total</div><div class="dc-val">{{ dist_total | eur }}</div></div></div>
+      <div class="dist-list" style="flex:1; min-width:220px">
+        {% for d in dist %}<div class="dist-row"><span class="dot" style="background:{{ d.color }}"></span>
+          <span class="dist-name">{{ d.nombre }}</span>
+          <span><div class="dist-amt">{{ d.importe | eur }}</div><div class="dist-pct">{{ d.pct }} %</div></span></div>{% endfor %}
+      </div>
+    </div>
+    {% else %}<div class="empty">{{ icon('chart',34)|safe }}<p>Sin datos.</p></div>{% endif %}
+  </div>
+
+  <div class="card">
+    <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Comparación temporal</div>
+    <h3 style="font-size:19px">{{ comp.anio }} frente a {{ comp.prev }}</h3>
+    <p class="muted" style="font-size:13px; margin-bottom:16px">Los importes comparan años completos.</p>
+    {% for key, label in [('ingresos','Ingresos'),('gastos','Gastos'),('balance','Balance')] %}
+      {% set cur = comp[key][0] %}{% set prev = comp[key][1] %}
+      {% set maxv = [cur|abs, prev|abs, 1]|max %}
+      <div style="margin-bottom:16px">
+        <div class="row-between"><strong>{{ label }}</strong>
+          <small>{{ cur | eur }} vs {{ prev | eur }}</small></div>
+        <div class="progress" style="margin-top:6px"><span style="width:{{ (cur|abs / maxv * 100) }}%"></span></div>
+      </div>
+    {% endfor %}
+    <div class="grid grid-2" style="margin-top:18px">
+      <div class="card-2"><small>Balance {{ comp.anio }}</small><div class="st-val" style="font-size:22px">{{ comp.balance[0] | eur }}</div></div>
+      <div class="card-2"><small>Balance {{ comp.prev }}</small><div class="st-val" style="font-size:22px">{{ comp.balance[1] | eur }}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Últimos 12 meses</div>
+  <h3 style="font-size:19px; margin-bottom:14px">Ingresos vs gastos</h3>
+  <div style="height:300px"><canvas id="bars"></canvas></div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  Balance.donut('donut',
+    {{ dist | map(attribute='nombre') | list | tojson }},
+    {{ dist | map(attribute='importe') | list | tojson }},
+    {{ dist | map(attribute='color') | list | tojson }});
+  Balance.bars('bars',
+    {{ monthly | map(attribute='label') | list | tojson }},
+    [
+      { label:'Ingresos', data:{{ monthly | map(attribute='ingresos') | list | tojson }}, backgroundColor:'#3a9c78', borderRadius:4 },
+      { label:'Gastos', data:{{ monthly | map(attribute='gastos') | list | tojson }}, backgroundColor:'#e5487a', borderRadius:4 }
+    ]);
+</script>
+{% endblock %}

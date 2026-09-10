@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Categorías · Balance{% endblock %}
+{% block content %}
+<div x-data="{ modal:false, edit:null, tipo:'gasto', icono:'tag', color:'#1f5c46',
+     nuevo(t){ this.edit=null; this.tipo=t; this.icono='tag'; this.color='#1f5c46'; this.modal=true },
+     abrir(c){ this.edit=c; this.icono=c.icono; this.color=c.color; this.modal=true } }">
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Organización</div>
+    <h1 class="page-title">Categorías</h1>
+    <p class="page-sub">Ordena, colorea y reordena tus categorías de gasto e ingreso.</p>
+  </div>
+</div>
+
+{% macro cat_list(cats, label, tipo) %}
+<div class="card" style="margin-bottom:18px">
+  <div class="row-between" style="margin-bottom:8px">
+    <h3 style="font-size:18px">{{ label }}</h3>
+    <button class="btn btn-sm btn-primary" @click="nuevo('{{ tipo }}')">+ Añadir</button>
+  </div>
+  {% if cats %}
+  {% for c in cats %}
+  <div class="mov" style="border-bottom:1px solid var(--line)">
+    <span class="mov-ic" style="background:{{ c.color }}22; color:{{ c.color }}">{{ icon(c.icono,20)|safe }}</span>
+    <div class="mov-body">
+      <div class="mov-title">{{ c.nombre }}</div>
+      <div class="mov-sub">{{ counts.get(c.id, 0) }} movimientos</div>
+    </div>
+    <div class="flex gap items-center">
+      <form method="post" action="/categorias/{{ c.id }}/mover" style="display:inline">
+        <input type="hidden" name="dir" value="up"><button class="btn btn-ghost btn-icon" title="Subir">↑</button></form>
+      <form method="post" action="/categorias/{{ c.id }}/mover" style="display:inline">
+        <input type="hidden" name="dir" value="down"><button class="btn btn-ghost btn-icon" title="Bajar">↓</button></form>
+      <button class="btn btn-ghost btn-icon" @click='abrir({{ {"id":c.id,"nombre":c.nombre,"icono":c.icono,"color":c.color} | tojson }})'>⋯</button>
+      <form method="post" action="/categorias/{{ c.id }}/archivar" style="display:inline"
+            onsubmit="return confirm('¿Archivar «{{ c.nombre }}»?')">
+        <button class="btn btn-ghost btn-icon" style="color:var(--danger)" title="Archivar">✕</button></form>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p class="muted">Sin categorías de este tipo todavía.</p>
+  {% endif %}
+</div>
+{% endmacro %}
+
+{{ cat_list(gastos, 'Gastos', 'gasto') }}
+{{ cat_list(ingresos, 'Ingresos', 'ingreso') }}
+
+<template x-if="modal">
+  <div class="modal-back" @click.self="modal=false">
+    <div class="modal">
+      <div class="row-between"><h3 x-text="edit ? 'Editar categoría' : 'Nueva categoría'"></h3>
+        <button class="btn btn-ghost btn-icon" @click="modal=false">✕</button></div>
+      <form method="post" :action="edit ? '/categorias/'+edit.id+'/editar' : '/categorias/nueva'" class="mt">
+        <label class="field"><span>Nombre</span>
+          <input name="nombre" required :value="edit?edit.nombre:''"></label>
+        <template x-if="!edit"><input type="hidden" name="tipo" :value="tipo"></template>
+        <label class="field"><span>Icono</span>
+          <div class="icon-picker">
+            {% for ic in CATEGORY_ICONS %}
+            <button type="button" class="icon-opt" :class="{ 'on': icono==='{{ ic }}' }"
+              @click="icono='{{ ic }}'">{{ icon(ic,20)|safe }}</button>
+            {% endfor %}
+          </div>
+          <input type="hidden" name="icono" :value="icono"></label>
+        <label class="field"><span>Color</span>
+          <input type="color" name="color" :value="color" @input="color=$event.target.value" style="width:60px; height:38px; padding:2px"></label>
+        <div class="text-right"><button class="btn btn-primary" type="submit">Guardar</button></div>
+      </form>
+    </div>
+  </div>
+</template>
+</div>
+{% endblock %}

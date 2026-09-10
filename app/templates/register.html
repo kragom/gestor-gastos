@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear cuenta · Balance</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <script>(function(){var s=localStorage.getItem('balance-theme')||'system';var d=s==='dark'||(s==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);})();</script>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-card card">
+    <div class="auth-brand">
+      <span class="brand-logo">{{ icon('bank', 22) | safe }}</span>
+      <span class="brand-name">Balance</span>
+    </div>
+    <h2 style="text-align:center">Crea tu cuenta</h2>
+    <p class="muted" style="text-align:center; margin-top:4px">Empieza a organizar tu economía.</p>
+    {% if error %}<div class="error-box mt">{{ error }}</div>{% endif %}
+    <form method="post" action="/register" class="mt-lg">
+      <label class="field"><span>Nombre</span>
+        <input type="text" name="nombre" required placeholder="Tu nombre"></label>
+      <label class="field"><span>Correo electrónico</span>
+        <input type="email" name="email" required placeholder="tu@correo.com"></label>
+      <label class="field"><span>Contraseña</span>
+        <input type="password" name="password" required minlength="6" placeholder="Mínimo 6 caracteres"></label>
+      <button class="btn btn-primary" style="width:100%; justify-content:center" type="submit">Crear cuenta</button>
+    </form>
+    <div class="divider"></div>
+    <p class="muted" style="text-align:center">¿Ya tienes cuenta? <a class="link" href="/login">Entrar</a></p>
+  </div>
+</div>
+</body>
+</html>

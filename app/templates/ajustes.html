@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Ajustes · Balance{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Configuración</div>
+    <h1 class="page-title">Ajustes</h1>
+    <p class="page-sub">Personaliza tu perfil y la apariencia de Balance.</p>
+  </div>
+</div>
+
+<div class="grid grid-2" style="gap:18px">
+  <div class="card">
+    <h3 style="font-size:18px; margin-bottom:14px">Perfil</h3>
+    <form method="post" action="/ajustes/perfil">
+      <label class="field"><span>Nombre</span><input name="nombre" value="{{ user.nombre }}" required></label>
+      <label class="field"><span>Correo</span>
+        <input value="{{ user.email }}" disabled style="opacity:.6"></label>
+      <label class="field"><span>Moneda</span>
+        <select name="moneda">
+          <option value="EUR" {{ 'selected' if user.moneda=='EUR' }}>Euro (€)</option>
+          <option value="USD" {{ 'selected' if user.moneda=='USD' }}>Dólar ($)</option>
+          <option value="GBP" {{ 'selected' if user.moneda=='GBP' }}>Libra (£)</option>
+        </select></label>
+      <div class="text-right"><button class="btn btn-primary" type="submit">Guardar perfil</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="font-size:18px; margin-bottom:14px">Apariencia</h3>
+    <p class="muted" style="font-size:13.5px; margin-bottom:14px">Elige el tema. «Sistema» sigue la configuración de tu dispositivo.</p>
+    <form method="post" action="/ajustes/tema" class="flex gap" style="flex-wrap:wrap">
+      {% for val, lbl in [('light','Claro'),('dark','Oscuro'),('system','Sistema')] %}
+      <button type="submit" name="tema" value="{{ val }}"
+        class="btn {{ 'btn-primary' if user.tema==val else '' }}"
+        onclick="localStorage.setItem('balance-theme','{{ val }}')">{{ lbl }}</button>
+      {% endfor %}
+    </form>
+    <div class="mov" style="margin-top:20px; border:none">
+      <div class="mov-body">
+        <div class="mov-title">Sesión</div>
+        <div class="mov-sub">{{ user.email }}</div>
+      </div>
+      <a class="btn" href="/logout" style="color:var(--danger)">Cerrar sesión</a>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:18px">
+  <h3 style="font-size:18px; margin-bottom:6px">Sobre Balance</h3>
+  <p class="muted" style="font-size:13.5px">{{ APP_TAGLINE }} Tus datos se guardan de forma privada y sincronizada. Aplicación instalable como PWA desde el navegador de tu móvil.</p>
+</div>
+{% endblock %}

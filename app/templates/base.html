@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="{{ user.tema if user else 'system' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#1f5c46">
+  <title>{% block title %}{{ APP_NAME }}{% endblock %}</title>
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/icon.svg">
+  <link rel="stylesheet" href="/static/styles.css">
+  <script>
+    // Aplica el tema antes de pintar para evitar parpadeo
+    (function () {
+      const t = document.documentElement.getAttribute('data-theme') || 'system';
+      const stored = localStorage.getItem('balance-theme');
+      const theme = stored || t;
+      const dark = theme === 'dark' || (theme === 'system' &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.classList.toggle('dark', dark);
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+<body>
+<div class="app" x-data="{ open: false }">
+  <!-- Sidebar -->
+  <aside class="sidebar" :class="{ 'open': open }">
+    <div class="brand">
+      <span class="brand-logo">{{ icon('bank', 22) | safe }}</span>
+      <span class="brand-name">{{ APP_NAME }}</span>
+    </div>
+    <nav class="nav">
+      {% set items = [
+        ('inicio','/','home','Inicio'),
+        ('movimientos','/movimientos','list','Movimientos'),
+        ('graficos','/graficos','chart','Gráficos'),
+        ('presupuestos','/presupuestos','calendar','Presupuestos'),
+        ('reintegrables','/reintegrables','refresh','Reintegrables'),
+        ('extraordinarios','/gastos-extraordinarios','receipt','Gastos extraordinarios'),
+        ('categorias','/categorias','tag','Categorías'),
+        ('cuentas','/cuentas','wallet','Cuentas'),
+        ('ajustes','/ajustes','settings','Ajustes')
+      ] %}
+      {% for key, href, ic, label in items %}
+      <a href="{{ href }}" class="nav-item {{ 'active' if active == key else '' }}">
+        <span class="nav-ic">{{ icon(ic, 20) | safe }}</span>
+        <span>{{ label }}</span>
+      </a>
+      {% endfor %}
+    </nav>
+    <div class="sidebar-user">
+      <div class="avatar">{{ (user.nombre[0] if user else 'U') | upper }}</div>
+      <div class="su-info">
+        <strong>{{ user.nombre if user else 'Invitado' }}</strong>
+        <small>{{ user.email if user else '' }}</small>
+      </div>
+      <a href="/logout" class="su-logout" title="Cerrar sesión">{{ icon('refresh',18) | safe }}</a>
+    </div>
+  </aside>
+  <div class="overlay" :class="{ 'show': open }" @click="open = false"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <button class="menu-btn" @click="open = !open" aria-label="Menú">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <span class="tagline">{{ APP_TAGLINE }}</span>
+      <button class="theme-toggle" onclick="Balance.cycleTheme()" title="Cambiar tema">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
+      </button>
+    </header>
+    <main class="content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<script src="/static/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

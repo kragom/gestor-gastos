@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Presupuestos · Balance{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Planificación</div>
+    <h1 class="page-title">Presupuestos</h1>
+    <p class="page-sub">Marca un límite por categoría y sigue el consumo del mes en la cuenta común.</p>
+  </div>
+  <div class="period-nav">
+    <a class="btn btn-icon" href="/presupuestos?period={{ prev }}">‹</a>
+    <span class="period-pill">{{ month_name(mes, anio) }}</span>
+    <a class="btn btn-icon" href="/presupuestos?period={{ next }}">›</a>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-bottom:26px">
+  <div class="stat"><div class="st-top">Presupuestado {{ icon('calendar',16)|safe }}</div><div class="st-val">{{ data.presupuesto | eur }}</div></div>
+  <div class="stat"><div class="st-top">Gastado {{ icon('chart',16)|safe }}</div><div class="st-val">{{ data.gastado | eur }}</div></div>
+  <div class="stat"><div class="st-top">Disponible {{ icon('coins',16)|safe }}</div>
+    <div class="st-val {{ 'amt-neg' if data.disponible < 0 else 'amt-pos' }}">{{ data.disponible | eur }}</div></div>
+  <div class="stat"><div class="st-top">Consumido {{ icon('refresh',16)|safe }}</div>
+    <div class="st-val">{{ ((data.gastado / data.presupuesto * 100) if data.presupuesto else 0)|round(0)|int }} %</div></div>
+</div>
+
+{% if data['items'] %}
+<div class="card">
+  {% for it in data['items'] %}
+  {% set pct = (it.gastado / it.importe * 100) if it.importe else 0 %}
+  <div class="budget-row" style="padding:14px 0; border-bottom:1px solid var(--line)">
+    <div class="row-between" style="margin-bottom:8px">
+      <div class="flex items-center gap">
+        <span class="mov-ic" style="background:{{ it.categoria.color }}22; color:{{ it.categoria.color }}">
+          {{ icon(it.categoria.icono, 18)|safe }}</span>
+        <div>
+          <strong>{{ it.categoria.nombre }}</strong>
+          <div class="muted" style="font-size:12.5px">{{ it.gastado | eur }}
+            {% if it.tiene_presupuesto %}de {{ it.importe | eur }}{% else %}· sin límite fijado{% endif %}</div>
+        </div>
+      </div>
+      <form method="post" action="/presupuestos/guardar" class="flex gap items-center">
+        <input type="hidden" name="anio" value="{{ anio }}">
+        <input type="hidden" name="mes" value="{{ mes }}">
+        <input type="hidden" name="category_id" value="{{ it.categoria.id }}">
+        <input type="number" name="importe" step="0.01" min="0" value="{{ it.importe if it.tiene_presupuesto else '' }}"
+               placeholder="0,00" style="width:120px" aria-label="Presupuesto {{ it.categoria.nombre }}">
+        <button class="btn btn-sm btn-primary" type="submit">Guardar</button>
+      </form>
+    </div>
+    {% if it.tiene_presupuesto %}
+    <div class="progress {{ 'over' if pct > 100 else '' }}"><span style="width:{{ [pct,100]|min }}%"></span></div>
+    <div class="row-between" style="margin-top:4px"><small>{{ pct|round(0)|int }} % consumido</small>
+      {% if it.importe - it.gastado < 0 %}<small class="amt-neg">{{ (it.gastado - it.importe) | eur }} por encima</small>
+      {% else %}<small class="muted">{{ (it.importe - it.gastado) | eur }} disponible</small>{% endif %}</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card empty">{{ icon('calendar',34)|safe }}<p>Crea categorías de gasto para poder asignar presupuestos.</p>
+  <a class="btn btn-primary" href="/categorias">Ir a categorías</a></div>
+{% endif %}
+{% endblock %}
