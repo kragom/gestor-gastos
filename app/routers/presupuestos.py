@@ -50,3 +50,29 @@ def guardar(request: Request, anio: int = Form(...), mes: int = Form(...),
                       importe=abs(importe)))
     save(db)
     return RedirectResponse(f"/presupuestos?period={anio:04d}-{mes:02d}", status_code=303)
+
+
+@router.post("/presupuestos/repetir")
+def repetir(anio: int = Form(...), mes: int = Form(...), meses: int = Form(12),
+            db: Session = Depends(get_db), user: User = Depends(require_user)):
+    """Copia los importes del mes indicado a los siguientes 'meses' meses."""
+    origen = (db.query(Budget)
+              .filter(Budget.user_id == user.id, Budget.anio == anio, Budget.mes == mes)
+              .all())
+    plantilla = {b.category_id: abs(b.importe) for b in origen if b.importe}
+    y, m = anio, mes
+    for _ in range(max(1, meses)):
+        m += 1
+        if m == 13:
+            m = 1
+            y += 1
+        for cat_id, imp in plantilla.items():
+            existing = (db.query(Budget).filter(
+                Budget.user_id == user.id, Budget.category_id == cat_id,
+                Budget.anio == y, Budget.mes == m).first())
+            if existing:
+                existing.importe = imp
+            else:
+                db.add(Budget(user_id=user.id, category_id=cat_id, anio=y, mes=m, importe=imp))
+    save(db)
+    return RedirectResponse(f"/presupuestos?period={anio:04d}-{mes:02d}", status_code=303)
