@@ -36,7 +36,8 @@ class Account(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="accounts")
-    transactions: Mapped[list["Transaction"]] = relationship(back_populates="account")
+    transactions: Mapped[list["Transaction"]] = relationship(
+        back_populates="account", foreign_keys="Transaction.account_id")
 
 
 class Category(Base):
@@ -60,9 +61,12 @@ class Transaction(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
     category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    # Cuenta destino: solo se usa en transferencias (dinero que sale de account_id
+    # y entra en cuenta_destino_id). No cuenta como gasto ni como ingreso.
+    cuenta_destino_id: Mapped[int | None] = mapped_column(ForeignKey("accounts.id"), nullable=True)
     concepto: Mapped[str] = mapped_column(String(200))
     importe: Mapped[float] = mapped_column(Float)  # siempre positivo
-    tipo: Mapped[str] = mapped_column(String(16), default="gasto")  # gasto | ingreso
+    tipo: Mapped[str] = mapped_column(String(16), default="gasto")  # gasto | ingreso | transferencia
     fecha: Mapped[date] = mapped_column(Date, index=True, default=date.today)
     nota: Mapped[str] = mapped_column(Text, default="")
     es_reintegrable: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -70,7 +74,9 @@ class Transaction(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     user: Mapped["User"] = relationship(back_populates="transactions")
-    account: Mapped["Account"] = relationship(back_populates="transactions")
+    account: Mapped["Account"] = relationship(
+        back_populates="transactions", foreign_keys=[account_id])
+    cuenta_destino: Mapped["Account"] = relationship(foreign_keys=[cuenta_destino_id])
     category: Mapped["Category"] = relationship(back_populates="transactions")
 
     @property

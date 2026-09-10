@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Movimientos · Balance{% endblock %}
 {% block content %}
-<div x-data="{ modal:false, edit:null,
-     open(d){ this.edit=d; this.modal=true },
-     nuevo(){ this.edit=null; this.modal=true } }">
+<div x-data="{ modal:false, edit:null, tipo:'gasto',
+     open(d){ this.edit=d; this.tipo=d.tipo; this.modal=true },
+     nuevo(){ this.edit=null; this.tipo='gasto'; this.modal=true } }">
 
 <div class="row-between">
   <div>
@@ -25,6 +25,7 @@
         <option value="">Todos</option>
         <option value="gasto" {{ 'selected' if f.tipo=='gasto' }}>Gastos</option>
         <option value="ingreso" {{ 'selected' if f.tipo=='ingreso' }}>Ingresos</option>
+        <option value="transferencia" {{ 'selected' if f.tipo=='transferencia' }}>Transferencias</option>
       </select></label>
     <label class="field"><span>Cuenta</span>
       <select name="cuenta"><option value="">Todas</option>
@@ -52,6 +53,19 @@
   {% for day, items in grouped %}
   <div class="mov-group-title">{{ day.strftime('%A, %d de %B de %Y') }}</div>
     {% for t in items %}
+    {% if t.tipo == 'transferencia' %}
+    <div class="mov">
+      <span class="mov-ic" style="background:#64748b22; color:#64748b">{{ icon('transfer', 20)|safe }}</span>
+      <div class="mov-body">
+        <div class="mov-title">{{ t.concepto }}
+          <span class="badge">TRANSFERENCIA</span>
+        </div>
+        <div class="mov-sub">{{ t.account.nombre }} → {{ t.cuenta_destino.nombre if t.cuenta_destino else '—' }}</div>
+      </div>
+      <div class="mov-amt">{{ t.importe | eur }}</div>
+      <button class="btn btn-ghost btn-icon" @click='open({{ {"id":t.id,"concepto":t.concepto,"importe":t.importe,"tipo":t.tipo,"account_id":t.account_id,"category_id":t.category_id,"cuenta_destino_id":t.cuenta_destino_id,"fecha":t.fecha.isoformat(),"nota":t.nota,"es_reintegrable":t.es_reintegrable,"reintegrado":t.reintegrado} | tojson }})'>⋯</button>
+    </div>
+    {% else %}
     <div class="mov">
       <span class="mov-ic" style="background:{{ (t.category.color if t.category else '#6b7280') }}22; color:{{ (t.category.color if t.category else '#6b7280') }}">
         {{ icon(t.category.icono if t.category else 'tag', 20)|safe }}</span>
@@ -64,8 +78,9 @@
       </div>
       <div class="mov-amt {{ 'amt-pos' if t.tipo=='ingreso' else 'amt-neg' }}">
         {{ '+' if t.tipo=='ingreso' else '−' }}{{ t.importe | eur }}</div>
-      <button class="btn btn-ghost btn-icon" @click='open({{ {"id":t.id,"concepto":t.concepto,"importe":t.importe,"tipo":t.tipo,"account_id":t.account_id,"category_id":t.category_id,"fecha":t.fecha.isoformat(),"nota":t.nota,"es_reintegrable":t.es_reintegrable,"reintegrado":t.reintegrado} | tojson }})'>⋯</button>
+      <button class="btn btn-ghost btn-icon" @click='open({{ {"id":t.id,"concepto":t.concepto,"importe":t.importe,"tipo":t.tipo,"account_id":t.account_id,"category_id":t.category_id,"cuenta_destino_id":t.cuenta_destino_id,"fecha":t.fecha.isoformat(),"nota":t.nota,"es_reintegrable":t.es_reintegrable,"reintegrado":t.reintegrado} | tojson }})'>⋯</button>
     </div>
+    {% endif %}
     {% endfor %}
   {% endfor %}
 {% else %}
@@ -85,14 +100,20 @@
           <label class="field"><span>Importe</span>
             <input name="importe" type="number" step="0.01" required :value="edit?edit.importe:''"></label>
           <label class="field"><span>Tipo</span>
-            <select name="tipo" x-init="$nextTick(()=>{ if(edit) $el.value=edit.tipo })">
-              <option value="gasto">Gasto</option><option value="ingreso">Ingreso</option></select></label>
+            <select name="tipo" x-model="tipo">
+              <option value="gasto">Gasto</option>
+              <option value="ingreso">Ingreso</option>
+              <option value="transferencia">Transferencia</option></select></label>
         </div>
         <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span>Cuenta</span>
+          <label class="field"><span x-text="tipo=='transferencia' ? 'Cuenta origen' : 'Cuenta'"></span>
             <select name="account_id" required x-init="$nextTick(()=>{ if(edit) $el.value=edit.account_id })">
               {% for a in accounts %}<option value="{{ a.id }}">{{ a.nombre }}</option>{% endfor %}</select></label>
-          <label class="field"><span>Categoría</span>
+          <label class="field" x-show="tipo=='transferencia'"><span>Cuenta destino</span>
+            <select name="cuenta_destino_id" x-init="$nextTick(()=>{ if(edit&&edit.cuenta_destino_id) $el.value=edit.cuenta_destino_id })">
+              <option value="">Selecciona…</option>
+              {% for a in accounts %}<option value="{{ a.id }}">{{ a.nombre }}</option>{% endfor %}</select></label>
+          <label class="field" x-show="tipo!='transferencia'"><span>Categoría</span>
             <select name="category_id" x-init="$nextTick(()=>{ if(edit&&edit.category_id) $el.value=edit.category_id })">
               <option value="">Sin categoría</option>
               {% for c in categories %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}</select></label>
@@ -100,7 +121,7 @@
         <div class="grid grid-2" style="gap:12px">
           <label class="field"><span>Fecha</span>
             <input name="fecha" type="date" :value="edit?edit.fecha:'{{ today().isoformat() }}'"></label>
-          <label class="field" style="display:flex; align-items:flex-end; gap:8px; padding-bottom:12px">
+          <label class="field" x-show="tipo!='transferencia'" style="display:flex; align-items:flex-end; gap:8px; padding-bottom:12px">
             <input type="checkbox" name="es_reintegrable" value="1" style="width:auto" x-init="$nextTick(()=>{ if(edit) $el.checked=edit.es_reintegrable })">
             <span style="margin:0">Reintegrable</span></label>
         </div>

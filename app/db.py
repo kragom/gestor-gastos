@@ -24,3 +24,15 @@ def get_db():
 def init_db():
     from . import models  # noqa: F401  (registra los modelos)
     Base.metadata.create_all(bind=engine)
+
+
+def migrate():
+    """Migraciones ligeras para bases de datos ya existentes (SQLite)."""
+    if not DATABASE_URL.startswith("sqlite"):
+        return
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        cols = [r[1] for r in conn.execute(text("PRAGMA table_info(transactions)"))]
+        if "cuenta_destino_id" not in cols:
+            conn.execute(text(
+                "ALTER TABLE transactions ADD COLUMN cuenta_destino_id INTEGER"))

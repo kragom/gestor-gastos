@@ -16,13 +16,21 @@ router = APIRouter()
 
 
 def savings_income(db: Session, user_id: int, start, end) -> float:
-    total = (db.query(func.coalesce(func.sum(Transaction.importe), 0.0))
-             .join(Account, Account.id == Transaction.account_id)
-             .filter(Transaction.user_id == user_id, Account.tipo == "ahorro",
-                     Transaction.tipo == "ingreso",
-                     Transaction.fecha >= start, Transaction.fecha <= end)
-             .scalar() or 0.0)
-    return round(total, 2)
+    # Ingresos directos a cuentas de ahorro.
+    directo = (db.query(func.coalesce(func.sum(Transaction.importe), 0.0))
+               .join(Account, Account.id == Transaction.account_id)
+               .filter(Transaction.user_id == user_id, Account.tipo == "ahorro",
+                       Transaction.tipo == "ingreso",
+                       Transaction.fecha >= start, Transaction.fecha <= end)
+               .scalar() or 0.0)
+    # Transferencias que entran en cuentas de ahorro (aportaciones al ahorro).
+    transferido = (db.query(func.coalesce(func.sum(Transaction.importe), 0.0))
+                   .join(Account, Account.id == Transaction.cuenta_destino_id)
+                   .filter(Transaction.user_id == user_id, Account.tipo == "ahorro",
+                           Transaction.tipo == "transferencia",
+                           Transaction.fecha >= start, Transaction.fecha <= end)
+                   .scalar() or 0.0)
+    return round(directo + transferido, 2)
 
 
 @router.get("/", response_class=HTMLResponse)

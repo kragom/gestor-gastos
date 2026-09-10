@@ -19,7 +19,7 @@ def _filtered(db: Session, user_id: int, q, tipo, cuenta, categoria, desde, hast
     query = db.query(Transaction).filter(Transaction.user_id == user_id)
     if q:
         query = query.filter(Transaction.concepto.ilike(f"%{q}%"))
-    if tipo in ("gasto", "ingreso"):
+    if tipo in ("gasto", "ingreso", "transferencia"):
         query = query.filter(Transaction.tipo == tipo)
     if cuenta:
         query = query.filter(Transaction.account_id == int(cuenta))
@@ -58,18 +58,30 @@ def movimientos(request: Request, q: str = "", tipo: str = "", cuenta: str = "",
 @router.post("/movimientos/nuevo")
 def crear(request: Request, concepto: str = Form(...), importe: float = Form(...),
           tipo: str = Form("gasto"), account_id: int = Form(...),
-          category_id: str = Form(""), fecha: str = Form(""), nota: str = Form(""),
+          category_id: str = Form(""), cuenta_destino_id: str = Form(""),
+          fecha: str = Form(""), nota: str = Form(""),
           es_reintegrable: str = Form(""),
           db: Session = Depends(get_db), user: User = Depends(require_user)):
     try:
         f = date.fromisoformat(fecha) if fecha else date.today()
     except ValueError:
         f = date.today()
-    t = Transaction(
-        user_id=user.id, account_id=account_id,
-        category_id=int(category_id) if category_id else None,
-        concepto=concepto.strip() or "Movimiento", importe=abs(importe), tipo=tipo,
-        fecha=f, nota=nota, es_reintegrable=bool(es_reintegrable))
+    if tipo == "transferencia":
+        destino = int(cuenta_destino_id) if cuenta_destino_id else None
+        # Una transferencia necesita una cuenta destino distinta del origen.
+        if not destino or destino == account_id:
+            return RedirectResponse("/movimientos", status_code=303)
+        t = Transaction(
+            user_id=user.id, account_id=account_id, cuenta_destino_id=destino,
+            category_id=None, concepto=concepto.strip() or "Transferencia",
+            importe=abs(importe), tipo="transferencia", fecha=f, nota=nota,
+            es_reintegrable=False)
+    else:
+        t = Transaction(
+            user_id=user.id, account_id=account_id,
+            category_id=int(category_id) if category_id else None,
+            concepto=concepto.strip() or "Movimiento", importe=abs(importe), tipo=tipo,
+            fecha=f, nota=nota, es_reintegrable=bool(es_reintegrable))
     db.add(t)
     save(db)
     return RedirectResponse("/movimientos", status_code=303)
@@ -78,7 +90,8 @@ def crear(request: Request, concepto: str = Form(...), importe: float = Form(...
 @router.post("/movimientos/{tid}/editar")
 def editar(tid: int, concepto: str = Form(...), importe: float = Form(...),
            tipo: str = Form("gasto"), account_id: int = Form(...),
-           category_id: str = Form(""), fecha: str = Form(""), nota: str = Form(""),
+           category_id: str = Form(""), cuenta_destino_id: str = Form(""),
+           fecha: str = Form(""), nota: str = Form(""),
            es_reintegrable: str = Form(""), reintegrado: str = Form(""),
            db: Session = Depends(get_db), user: User = Depends(require_user)):
     t = db.query(Transaction).filter(Transaction.id == tid, Transaction.user_id == user.id).first()
@@ -91,10 +104,19 @@ def editar(tid: int, concepto: str = Form(...), importe: float = Form(...),
         t.importe = abs(importe)
         t.tipo = tipo
         t.account_id = account_id
-        t.category_id = int(category_id) if category_id else None
         t.nota = nota
-        t.es_reintegrable = bool(es_reintegrable)
-        t.reintegrado = bool(reintegrado)
+        if tipo == "transferencia":
+            destino = int(cuenta_destino_id) if cuenta_destino_id else None
+            if destino and destino != account_id:
+                t.cuenta_destino_id = destino
+            t.category_id = None
+            t.es_reintegrable = False
+            t.reintegrado = False
+        else:
+            t.cuenta_destino_id = None
+            t.category_id = int(category_id) if category_id else None
+            t.es_reintegrable = bool(es_reintegrable)
+            t.reintegrado = bool(reintegrado)
         save(db)
     return RedirectResponse("/movimientos", status_code=303)
 

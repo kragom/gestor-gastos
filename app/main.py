@@ -7,7 +7,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import BASE_DIR
-from .db import init_db, SessionLocal
+from .db import init_db, migrate, SessionLocal
 from . import persistence
 from .seed import seed_demo
 from .routers import all_routers
@@ -17,6 +17,7 @@ from .routers import all_routers
 async def lifespan(app: FastAPI):
     persistence.pull_db()
     init_db()
+    migrate()
     db = SessionLocal()
     try:
         if os.getenv("SEED_DEMO", "0") == "1":

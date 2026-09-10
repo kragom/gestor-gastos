@@ -19,10 +19,15 @@ def month_bounds(anio: int, mes: int):
 
 
 def account_balance(db: Session, account: Account) -> float:
+    # Movimientos con esta cuenta como origen: ingreso suma, gasto/transferencia resta.
     total = db.query(func.coalesce(func.sum(
         case((Transaction.tipo == "ingreso", Transaction.importe), else_=-Transaction.importe)
     ), 0.0)).filter(Transaction.account_id == account.id).scalar() or 0.0
-    return round(account.saldo_inicial + total, 2)
+    # Transferencias que entran en esta cuenta (cuenta destino): suman.
+    entradas = db.query(func.coalesce(func.sum(Transaction.importe), 0.0)).filter(
+        Transaction.cuenta_destino_id == account.id,
+        Transaction.tipo == "transferencia").scalar() or 0.0
+    return round(account.saldo_inicial + total + entradas, 2)
 
 
 def accounts_with_balance(db: Session, user_id: int):
