@@ -110,9 +110,9 @@ def pending_reintegrables(db: Session, user_id: int):
 
 
 def budget_for_month(db: Session, user_id: int, anio: int, mes: int):
-    """Presupuesto por categoría del mes: importe presupuestado vs gastado (Cuenta común)."""
+    """Presupuesto por categoría del mes: importe presupuestado vs gastado
+    (suma de TODAS las cuentas del usuario)."""
     start, end = month_bounds(anio, mes)
-    common = primary_account(db, user_id)
     cats = (db.query(Category)
             .filter(Category.user_id == user_id, Category.tipo == "gasto",
                     Category.archivada == False)  # noqa: E712
@@ -125,12 +125,10 @@ def budget_for_month(db: Session, user_id: int, anio: int, mes: int):
              .filter(Budget.user_id == user_id, Budget.category_id == cat.id,
                      Budget.anio == anio, Budget.mes == mes).first())
         importe = b.importe if b else 0.0
-        gq = db.query(func.coalesce(func.sum(Transaction.importe), 0.0)).filter(
+        gastado = db.query(func.coalesce(func.sum(Transaction.importe), 0.0)).filter(
             Transaction.user_id == user_id, Transaction.category_id == cat.id,
-            Transaction.tipo == "gasto", Transaction.fecha >= start, Transaction.fecha <= end)
-        if common:
-            gq = gq.filter(Transaction.account_id == common.id)
-        gastado = gq.scalar() or 0.0
+            Transaction.tipo == "gasto", Transaction.fecha >= start,
+            Transaction.fecha <= end).scalar() or 0.0
         total_presupuesto += importe
         total_gastado += gastado
         items.append({
