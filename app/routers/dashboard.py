@@ -45,6 +45,7 @@ def dashboard(request: Request, mode: str = "month", period: str | None = None,
     ahorro = savings_income(db, user.id, start, end)
 
     dist, dist_total = finance.spend_by_category(db, user.id, start, end)
+    cat_txs = finance.transactions_by_category(db, user.id, start, end)
     _, reint_total = finance.pending_reintegrables(db, user.id)
     reint_rows, _ = finance.pending_reintegrables(db, user.id)
 
@@ -66,7 +67,7 @@ def dashboard(request: Request, mode: str = "month", period: str | None = None,
         "accts": accts, "patrimonio": patrimonio,
         "home_rows": home_rows, "home_total": home_total,
         "ingresos": ingresos, "gastos": gastos, "balance": balance, "ahorro": ahorro,
-        "dist": dist, "dist_total": dist_total,
+        "dist": dist, "dist_total": dist_total, "cat_txs": cat_txs,
         "reint_total": reint_total, "reint_count": len(reint_rows),
         "budget": budget, "cerrado": cerrado,
     })
