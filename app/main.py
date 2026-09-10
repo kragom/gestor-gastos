@@ -1,4 +1,5 @@
 """Aplicación FastAPI Balance."""
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -18,8 +19,9 @@ async def lifespan(app: FastAPI):
     init_db()
     db = SessionLocal()
     try:
-        seed_demo(db)
-        db.commit()
+        if os.getenv("SEED_DEMO", "0") == "1":
+            seed_demo(db)
+            db.commit()
     finally:
         db.close()
     yield
