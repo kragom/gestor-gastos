@@ -36,3 +36,10 @@ def migrate():
         if "cuenta_destino_id" not in cols:
             conn.execute(text(
                 "ALTER TABLE transactions ADD COLUMN cuenta_destino_id INTEGER"))
+        acols = [r[1] for r in conn.execute(text("PRAGMA table_info(accounts)"))]
+        if "mostrar_inicio" not in acols:
+            conn.execute(text(
+                "ALTER TABLE accounts ADD COLUMN mostrar_inicio BOOLEAN DEFAULT 1"))
+            # Por defecto el ahorro/inversión no se muestra en el inicio.
+            conn.execute(text(
+                "UPDATE accounts SET mostrar_inicio = 0 WHERE tipo = 'ahorro'"))
