@@ -14,6 +14,19 @@
   </div>
 </div>
 
+{% if data.presupuesto %}
+<div class="row-between" style="margin-bottom:16px; flex-wrap:wrap; gap:10px">
+  <small class="muted">¿Usas los mismos importes cada mes? Cópialos automáticamente hacia adelante.</small>
+  <form method="post" action="/presupuestos/repetir"
+        onsubmit="return confirm('Se copiarán estos importes a los próximos 12 meses (sobrescribiendo lo que hubiera). ¿Continuar?')">
+    <input type="hidden" name="anio" value="{{ anio }}">
+    <input type="hidden" name="mes" value="{{ mes }}">
+    <input type="hidden" name="meses" value="12">
+    <button class="btn btn-sm" type="submit">↻ Repetir en los próximos 12 meses</button>
+  </form>
+</div>
+{% endif %}
+
 <div class="grid grid-4" style="margin-bottom:26px">
   <div class="stat"><div class="st-top">Presupuestado {{ icon('calendar',16)|safe }}</div><div class="st-val">{{ data.presupuesto | eur }}</div></div>
   <div class="stat"><div class="st-top">Gastado {{ icon('chart',16)|safe }}</div><div class="st-val">{{ data.gastado | eur }}</div></div>
