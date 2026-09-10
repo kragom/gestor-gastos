@@ -55,6 +55,45 @@
   <h3 style="font-size:19px; margin-bottom:14px">Ingresos vs gastos</h3>
   <div style="height:300px"><canvas id="bars"></canvas></div>
 </div>
+
+{% if dist %}
+<div class="card" style="margin-top:18px">
+  <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Detalle · {{ anio }}</div>
+  <h3 style="font-size:19px; margin-bottom:6px">Gastos por categoría</h3>
+  <p class="muted" style="font-size:13px; margin-bottom:14px">Pulsa una categoría para ver sus movimientos, de mayor a menor gasto.</p>
+  {% for d in dist %}
+  {% set txs = cat_txs.get(d.id, []) %}
+  <div class="cat-acc" x-data="{ open:false, shown:5 }">
+    <button type="button" class="cat-acc-head" @click="open=!open">
+      <span class="dot" style="background:{{ d.color }}"></span>
+      <span class="cat-acc-name">{{ d.nombre }}</span>
+      <span class="cat-acc-count muted">{{ txs|length }} mov.</span>
+      <span class="cat-acc-amt">{{ d.importe | eur }}</span>
+      <span class="cat-acc-chevron" x-text="open ? '▲' : '▼'"></span>
+    </button>
+    <div x-show="open" style="padding:2px 0 12px">
+      {% for t in txs %}
+      <div class="cat-tx" x-show="{{ loop.index0 }} < shown">
+        <div class="cat-tx-main">
+          <span class="cat-tx-concept">{{ t.concepto }}</span>
+          <span class="cat-tx-sub muted">{{ t.fecha.strftime('%d/%m/%Y') }} · {{ t.account.nombre }}</span>
+        </div>
+        <span class="cat-tx-amt">{{ t.importe | eur }}</span>
+      </div>
+      {% endfor %}
+      {% if txs|length > 5 %}
+      <div class="flex gap" style="margin-top:8px">
+        <button type="button" class="btn btn-sm" x-show="shown < {{ txs|length }}"
+                @click="shown = Math.min(shown + 10, {{ txs|length }})">Ver más</button>
+        <button type="button" class="btn btn-sm" x-show="shown >= {{ txs|length }} && {{ txs|length }} > 5"
+                @click="shown = 5">Ver menos</button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
