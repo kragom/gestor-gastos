@@ -237,12 +237,14 @@ textarea { resize: vertical; min-height: 84px; }
 .cat-acc-head:hover { background: var(--line); border-radius: 8px; }
 .cat-acc-name { font-weight: 600; }
 .cat-acc-count { font-size: 12px; }
+.cat-acc-figs { margin-left: auto; text-align: right; line-height: 1.15; }
+.cat-acc-figs .dist-amt { font-weight: 700; display: block; }
+.cat-acc-figs .dist-pct { font-size: 11.5px; color: var(--muted); display: block; }
 .cat-acc-amt { margin-left: auto; font-weight: 700; }
-.cat-acc-chevron { font-size: 10px; color: var(--muted); width: 14px; text-align: center; }
+.cat-acc-chevron { font-size: 16px; color: var(--muted); width: 16px; text-align: center; }
 .cat-tx { display: flex; align-items: center; justify-content: space-between;
   padding: 7px 6px 7px 24px; font-size: 13.5px; border-top: 1px solid var(--line); }
 .cat-tx-main { display: flex; flex-direction: column; }
-.cat-tx-concept { }
 .cat-tx-sub { font-size: 11.5px; }
 .cat-tx-amt { font-weight: 600; white-space: nowrap; padding-left: 12px; }
 
