@@ -36,6 +36,12 @@
       </form>
     </div>
     <div class="st-val" style="font-size:26px; margin-bottom:12px">{{ row.saldo | eur }}</div>
+    <form method="post" action="/cuentas/{{ row.cuenta.id }}/inicio" style="margin-bottom:10px">
+      <label class="inicio-toggle" title="Mostrar esta cuenta y sumarla en el patrimonio del inicio">
+        <input type="checkbox" onchange="this.form.submit()" {{ 'checked' if row.cuenta.mostrar_inicio }}>
+        <span>Mostrar en inicio</span>
+      </label>
+    </form>
     {% if row.recientes %}
     <div class="muted" style="font-size:11px; text-transform:uppercase; letter-spacing:.05em; margin-bottom:6px">Últimos movimientos</div>
     {% for t in row.recientes %}
