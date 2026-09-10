@@ -21,10 +21,40 @@
     <div class="flex items-center gap" style="flex-wrap:wrap; gap:24px">
       <div class="donut-wrap"><canvas id="donut"></canvas>
         <div class="donut-center"><div class="dc-lbl">Total</div><div class="dc-val">{{ dist_total | eur }}</div></div></div>
-      <div class="dist-list" style="flex:1; min-width:220px">
-        {% for d in dist %}<div class="dist-row"><span class="dot" style="background:{{ d.color }}"></span>
-          <span class="dist-name">{{ d.nombre }}</span>
-          <span><div class="dist-amt">{{ d.importe | eur }}</div><div class="dist-pct">{{ d.pct }} %</div></span></div>{% endfor %}
+      <div class="dist-list" style="flex:1; min-width:260px">
+        {% for d in dist %}
+        {% set txs = cat_txs.get(d.id, []) %}
+        <div class="cat-acc" x-data="{ open:false, shown:5 }">
+          <button type="button" class="cat-acc-head" @click="open=!open">
+            <span class="dot" style="background:{{ d.color }}"></span>
+            <span class="cat-acc-name">{{ d.nombre }}</span>
+            <span class="cat-acc-figs">
+              <span class="dist-amt">{{ d.importe | eur }}</span>
+              <span class="dist-pct">{{ d.pct }} %</span>
+            </span>
+            <span class="cat-acc-chevron" x-text="open ? '\u2013' : '+'"></span>
+          </button>
+          <div x-show="open" style="padding:2px 0 12px">
+            {% for t in txs %}
+            <div class="cat-tx" x-show="{{ loop.index0 }} < shown">
+              <div class="cat-tx-main">
+                <span class="cat-tx-concept">{{ t.concepto }}</span>
+                <span class="cat-tx-sub muted">{{ t.fecha.strftime('%d/%m/%Y') }} · {{ t.account.nombre }}</span>
+              </div>
+              <span class="cat-tx-amt">{{ t.importe | eur }}</span>
+            </div>
+            {% endfor %}
+            {% if txs|length > 5 %}
+            <div class="flex gap" style="margin-top:8px">
+              <button type="button" class="btn btn-sm" x-show="shown < {{ txs|length }}"
+                      @click="shown = Math.min(shown + 10, {{ txs|length }})">Ver más</button>
+              <button type="button" class="btn btn-sm" x-show="shown >= {{ txs|length }} && {{ txs|length }} > 5"
+                      @click="shown = 5">Ver menos</button>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
       </div>
     </div>
     {% else %}<div class="empty">{{ icon('chart',34)|safe }}<p>Sin datos.</p></div>{% endif %}
@@ -52,48 +82,9 @@
 
 <div class="card">
   <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Últimos 12 meses</div>
-  <h3 style="font-size:19px; margin-bottom:14px">Ingresos vs gastos</h3>
+  <h3 style="font-size:19px; margin-bottom:14px">Ingresos vs gastos por mes</h3>
   <div style="height:300px"><canvas id="bars"></canvas></div>
 </div>
-
-{% if dist %}
-<div class="card" style="margin-top:18px">
-  <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Detalle · {{ anio }}</div>
-  <h3 style="font-size:19px; margin-bottom:6px">Gastos por categoría</h3>
-  <p class="muted" style="font-size:13px; margin-bottom:14px">Pulsa una categoría para ver sus movimientos, de mayor a menor gasto.</p>
-  {% for d in dist %}
-  {% set txs = cat_txs.get(d.id, []) %}
-  <div class="cat-acc" x-data="{ open:false, shown:5 }">
-    <button type="button" class="cat-acc-head" @click="open=!open">
-      <span class="dot" style="background:{{ d.color }}"></span>
-      <span class="cat-acc-name">{{ d.nombre }}</span>
-      <span class="cat-acc-count muted">{{ txs|length }} mov.</span>
-      <span class="cat-acc-amt">{{ d.importe | eur }}</span>
-      <span class="cat-acc-chevron" x-text="open ? '▲' : '▼'"></span>
-    </button>
-    <div x-show="open" style="padding:2px 0 12px">
-      {% for t in txs %}
-      <div class="cat-tx" x-show="{{ loop.index0 }} < shown">
-        <div class="cat-tx-main">
-          <span class="cat-tx-concept">{{ t.concepto }}</span>
-          <span class="cat-tx-sub muted">{{ t.fecha.strftime('%d/%m/%Y') }} · {{ t.account.nombre }}</span>
-        </div>
-        <span class="cat-tx-amt">{{ t.importe | eur }}</span>
-      </div>
-      {% endfor %}
-      {% if txs|length > 5 %}
-      <div class="flex gap" style="margin-top:8px">
-        <button type="button" class="btn btn-sm" x-show="shown < {{ txs|length }}"
-                @click="shown = Math.min(shown + 10, {{ txs|length }})">Ver más</button>
-        <button type="button" class="btn btn-sm" x-show="shown >= {{ txs|length }} && {{ txs|length }} > 5"
-                @click="shown = 5">Ver menos</button>
-      </div>
-      {% endif %}
-    </div>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
 {% endblock %}
 
 {% block scripts %}
