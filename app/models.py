@@ -32,6 +32,9 @@ class Account(Base):
     tipo: Mapped[str] = mapped_column(String(20), default="comun")  # comun | ahorro | otra
     saldo_inicial: Mapped[float] = mapped_column(Float, default=0.0)
     activa: Mapped[bool] = mapped_column(Boolean, default=True)
+    # Si la cuenta se muestra en el bloque "Saldos actuales" del inicio y suma
+    # en el patrimonio líquido total de esa sección.
+    mostrar_inicio: Mapped[bool] = mapped_column(Boolean, default=True)
     orden: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
