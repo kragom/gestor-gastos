@@ -43,6 +43,17 @@ def primary_account(db: Session, user_id: int) -> Account | None:
             .order_by(Account.orden, Account.id).first())
 
 
+def home_accounts(db: Session, user_id: int):
+    """Cuentas marcadas para mostrarse en el bloque 'Saldos actuales' del inicio,
+    con su saldo. El patrimonio de esa sección es la suma de estas."""
+    accounts = (db.query(Account)
+                .filter(Account.user_id == user_id, Account.mostrar_inicio == True)  # noqa: E712
+                .order_by(Account.orden, Account.id).all())
+    rows = [(a, account_balance(db, a)) for a in accounts]
+    total = round(sum(b for _, b in rows), 2)
+    return rows, total
+
+
 def savings_accounts(db: Session, user_id: int):
     return (db.query(Account)
             .filter(Account.user_id == user_id, Account.tipo == "ahorro")
