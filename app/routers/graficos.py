@@ -20,10 +20,11 @@ def graficos(request: Request, anio: int | None = None,
     anio = anio or date.today().year
     start, end = date(anio, 1, 1), date(anio, 12, 31)
     dist, dist_total = finance.spend_by_category(db, user.id, start, end)
+    cat_txs = finance.transactions_by_category(db, user.id, start, end)
     comp = finance.year_comparison(db, user.id, anio)
     monthly = finance.last_12_months(db, user.id, date(anio, 12, 1))
     return templates.TemplateResponse("graficos.html", {
         "request": request, "user": user, "active": "graficos",
-        "anio": anio, "dist": dist, "dist_total": dist_total,
+        "anio": anio, "dist": dist, "dist_total": dist_total, "cat_txs": cat_txs,
         "comp": comp, "monthly": monthly,
     })
