@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Mantenimiento · Balance{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Mantenimiento</div>
+    <h1 class="page-title">Keep-alive y token</h1>
+    <p class="page-sub">Renueva el token de GitHub para que la app no se duerma, sin salir de aquí.</p>
+  </div>
+</div>
+
+{% if ok %}
+<div class="card" style="border-color:var(--success, #16a34a); margin-bottom:16px">
+  <strong>✓ Token actualizado y keep-alive reiniciado.</strong>
+  {% if exp %}<p class="muted" style="margin-top:6px; font-size:13.5px">Nuevo token válido hasta: <strong>{{ exp }}</strong></p>{% endif %}
+</div>
+{% endif %}
+{% if err %}
+<div class="card" style="border-color:var(--danger); margin-bottom:16px">
+  <strong style="color:var(--danger)">No se pudo actualizar.</strong>
+  <p class="muted" style="margin-top:6px; font-size:13.5px">{{ err }}</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3 style="font-size:18px; margin-bottom:6px">¿Qué es esto?</h3>
+  <p class="muted" style="font-size:13.5px; margin-bottom:16px">
+    El servidor gratuito (Render) duerme la app tras un rato sin uso. Una tarea en GitHub la mantiene despierta,
+    pero usa un <em>token</em> que caduca. Cuando caduque (o si lo regeneras por seguridad), pégalo aquí y la app
+    lo actualizará automáticamente. El token <strong>no se guarda</strong> en la aplicación: solo se usa para
+    guardarlo cifrado en GitHub.</p>
+
+  <h3 style="font-size:16px; margin-bottom:8px">Cómo generar el token en GitHub</h3>
+  <p style="margin-bottom:12px">
+    <a class="btn btn-primary" target="_blank" rel="noopener"
+       href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=Balance%20keep-alive">
+       Generar token en GitHub →</a>
+  </p>
+  <p class="muted" style="font-size:13px; margin-bottom:12px">
+    Este enlace abre GitHub con los permisos <strong>repo</strong> y <strong>workflow</strong> ya marcados.
+    Solo tienes que elegir la caducidad, pulsar <em>Generate token</em> y copiar el valor (empieza por <code>ghp_</code>).</p>
+  <ol class="help-list" style="margin-bottom:18px">
+    <li>Abre el enlace de arriba (o entra en <em>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)</em>).</li>
+    <li>Comprueba que están marcados <strong>repo</strong> y <strong>workflow</strong>.</li>
+    <li>En caducidad elige lo que prefieras (a más tiempo, menos mantenimiento).</li>
+    <li>Pulsa <em>Generate token (classic)</em> y copia el token.</li>
+    <li>Pégalo abajo y pulsa <em>Actualizar</em>.</li>
+  </ol>
+
+  <form method="post" action="/mantenimiento/token">
+    <label class="field"><span>Nuevo token de GitHub (repositorio {{ repo }})</span>
+      <input name="token" type="password" required autocomplete="off"
+             placeholder="ghp_..." spellcheck="false"></label>
+    <div class="text-right">
+      <button class="btn btn-primary" type="submit">Actualizar token y reiniciar keep-alive</button>
+    </div>
+  </form>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h3 style="font-size:16px; margin-bottom:6px">Si prefieres hacerlo a mano</h3>
+  <p class="muted" style="font-size:13px; margin-bottom:12px">
+    También puedes actualizar el secret directamente en GitHub y luego relanzar el workflow:</p>
+  <div class="text-left" style="display:flex; flex-wrap:wrap; gap:8px">
+    <a class="btn" target="_blank" rel="noopener"
+       href="https://github.com/{{ repo }}/settings/secrets/actions/KEEPALIVE_PAT">Editar secret KEEPALIVE_PAT →</a>
+    <a class="btn" target="_blank" rel="noopener"
+       href="https://github.com/{{ repo }}/actions/workflows/keepalive.yml">Ver / lanzar workflow →</a>
+  </div>
+</div>
+{% endblock %}
