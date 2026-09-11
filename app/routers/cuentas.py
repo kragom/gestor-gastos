@@ -41,6 +41,18 @@ def crear(nombre: str = Form(...), tipo: str = Form("otra"),
     return RedirectResponse("/cuentas", status_code=303)
 
 
+@router.post("/cuentas/{aid}/editar")
+def editar(aid: int, nombre: str = Form(...), tipo: str = Form("otra"),
+           db: Session = Depends(get_db), user: User = Depends(require_user)):
+    a = db.query(Account).filter(Account.id == aid, Account.user_id == user.id).first()
+    if a:
+        a.nombre = nombre.strip() or a.nombre
+        if tipo in ("comun", "ahorro", "otra"):
+            a.tipo = tipo
+        save(db)
+    return RedirectResponse("/cuentas", status_code=303)
+
+
 @router.post("/cuentas/{aid}/archivar")
 def archivar(aid: int, db: Session = Depends(get_db), user: User = Depends(require_user)):
     a = db.query(Account).filter(Account.id == aid, Account.user_id == user.id).first()
