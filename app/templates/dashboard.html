@@ -17,22 +17,24 @@
   </div>
   <a class="link" href="/cuentas">Ver cuentas</a>
 </div>
-<div class="bento">
-  <div class="hero b-hero">
-    <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
-    <div class="big">{{ home_total | eur if home_rows else 0 | eur }}</div>
-    {% if home_rows %}
-    <div class="note">Suma de las cuentas que has elegido mostrar aquí.</div>
-    {% else %}
-    <div class="note">No has marcado ninguna cuenta para el inicio. Elígelas en <a class="link" href="/cuentas">Cuentas</a>.</div>
-    {% endif %}
+<div class="hero">
+  {% if home_rows %}
+  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
+  <div class="big">{{ home_total | eur }}</div>
+  <div class="note">Suma de las cuentas que has elegido mostrar aquí.</div>
+  <div class="home-accts">
+    {% for a, saldo in home_rows %}
+    <div class="home-acct">
+      <div class="lbl">{{ icon('piggy' if a.tipo=='ahorro' else 'bank',14)|safe }} {{ a.nombre }}</div>
+      <div class="mid">{{ saldo | eur }}</div>
+    </div>
+    {% endfor %}
   </div>
-  {% for a, saldo in home_rows %}
-  <div class="b-tile {{ 'b-accent' if a.tipo=='ahorro' else '' }}">
-    <div class="lbl">{{ icon('piggy' if a.tipo=='ahorro' else 'bank',14)|safe }} {{ a.nombre }}</div>
-    <div class="b-val">{{ saldo | eur }}</div>
-  </div>
-  {% endfor %}
+  {% else %}
+  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
+  <div class="big">{{ 0 | eur }}</div>
+  <div class="note">No has marcado ninguna cuenta para el inicio. Elígelas en <a class="link" href="/cuentas">Cuentas</a>.</div>
+  {% endif %}
 </div>
 
 <div class="divider" style="margin:30px 0 22px"></div>
