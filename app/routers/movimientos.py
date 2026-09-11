@@ -46,17 +46,28 @@ def movimientos(request: Request, q: str = "", tipo: str = "", cuenta: str = "",
     grouped = finance.transactions_grouped_by_day(rows)
     accounts = db.query(Account).filter(Account.user_id == user.id).order_by(Account.orden).all()
     categories = db.query(Category).filter(Category.user_id == user.id).order_by(Category.orden).all()
+    return templates.TemplateResponse("movimientos.html", {
+        "request": request, "user": user, "active": "movimientos",
+        "grouped": grouped, "accounts": accounts, "categories": categories,
+        "f": {"q": q, "tipo": tipo, "cuenta": cuenta, "categoria": categoria,
+              "desde": desde, "hasta": hasta},
+        "total": len(rows),
+    })
+
+
+@router.get("/recurrentes", response_class=HTMLResponse)
+def recurrentes_page(request: Request, db: Session = Depends(get_db),
+                     user: User = Depends(require_user)):
+    accounts = db.query(Account).filter(Account.user_id == user.id).order_by(Account.orden).all()
+    categories = db.query(Category).filter(Category.user_id == user.id).order_by(Category.orden).all()
     recurrentes = (db.query(RecurringTransaction)
                    .filter(RecurringTransaction.user_id == user.id)
                    .order_by(RecurringTransaction.activa.desc(),
                              RecurringTransaction.concepto).all())
-    return templates.TemplateResponse("movimientos.html", {
-        "request": request, "user": user, "active": "movimientos",
-        "grouped": grouped, "accounts": accounts, "categories": categories,
+    return templates.TemplateResponse("recurrentes.html", {
+        "request": request, "user": user, "active": "recurrentes",
+        "accounts": accounts, "categories": categories,
         "recurrentes": recurrentes,
-        "f": {"q": q, "tipo": tipo, "cuenta": cuenta, "categoria": categoria,
-              "desde": desde, "hasta": hasta},
-        "total": len(rows),
     })
 
 
