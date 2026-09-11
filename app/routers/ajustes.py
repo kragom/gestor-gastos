@@ -8,6 +8,7 @@ from ..deps import require_user
 from ..models import User
 from ..templating import templates
 from ..store import save
+from ..security import make_api_token
 
 router = APIRouter()
 
@@ -17,6 +18,8 @@ def ajustes(request: Request, db: Session = Depends(get_db),
             user: User = Depends(require_user)):
     return templates.TemplateResponse("ajustes.html", {
         "request": request, "user": user, "active": "ajustes",
+        "api_token": make_api_token(user.id),
+        "api_base": str(request.base_url).rstrip("/"),
     })
 
 
