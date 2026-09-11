@@ -1,6 +1,7 @@
 <div x-data="{
       tipo: '{{ tipo_ini }}',
       cat: {{ (t.category_id if t and t.category_id else 'null') }},
+      catOpen: {{ 'true' if not t else 'false' }},
       account: {{ (t.account_id if t else (accounts[0].id if accounts else 'null')) }},
       destino: {{ (t.cuenta_destino_id if t and t.cuenta_destino_id else 'null') }}
      }">
@@ -36,14 +37,17 @@
 
   <!-- Categoría (no en transferencias) -->
   <div x-show="tipo!='transferencia'">
-    <label class="field"><span>Categoría (opcional)</span></label>
+    <label class="field" style="display:flex; align-items:center; justify-content:space-between">
+      <span>Categoría (opcional)</span>
+      <button type="button" class="link" style="font-size:13px" x-show="!catOpen" @click="catOpen=true">Cambiar</button>
+    </label>
     <div class="cat-picker" style="margin-bottom:18px">
-      <div class="cat-tile" :class="{ 'on': cat===null }" @click="cat=null">
+      <div class="cat-tile" :class="{ 'on': cat===null }" x-show="catOpen || cat===null" @click="cat=null; catOpen=false">
         <span class="ct-ic" style="background:var(--surface-2); color:var(--muted)">{{ icon('tag',20)|safe }}</span>
         <span class="ct-name">Sin categoría</span>
       </div>
       {% for c in categories %}
-      <div class="cat-tile" :class="{ 'on': cat==={{ c.id }} }" @click="cat={{ c.id }}">
+      <div class="cat-tile" :class="{ 'on': cat==={{ c.id }} }" x-show="catOpen || cat==={{ c.id }}" @click="cat={{ c.id }}; catOpen=false">
         <span class="ct-ic" style="background:{{ c.color }}22; color:{{ c.color }}">{{ icon(c.icono,20)|safe }}</span>
         <span class="ct-name">{{ c.nombre }}</span>
       </div>
