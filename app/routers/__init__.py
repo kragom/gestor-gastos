@@ -1,7 +1,7 @@
 from . import (
     auth, dashboard, movimientos, graficos, presupuestos,
     reintegrables, extraordinarios, categorias, cuentas, ajustes,
-    keepalive,
+    keepalive, api,
 )
 
 all_routers = [
@@ -16,4 +16,5 @@ all_routers = [
     cuentas.router,
     ajustes.router,
     keepalive.router,
+    api.router,
 ]
