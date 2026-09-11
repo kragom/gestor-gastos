@@ -60,6 +60,36 @@ def movimientos(request: Request, q: str = "", tipo: str = "", cuenta: str = "",
     })
 
 
+@router.get("/movimientos/nuevo", response_class=HTMLResponse)
+def nuevo_form(request: Request, tipo: str = "gasto",
+               db: Session = Depends(get_db), user: User = Depends(require_user)):
+    accounts = db.query(Account).filter(Account.user_id == user.id).order_by(Account.orden).all()
+    categories = db.query(Category).filter(
+        Category.user_id == user.id, Category.archivada == False).order_by(Category.orden).all()  # noqa: E712
+    return templates.TemplateResponse("movimiento_form.html", {
+        "request": request, "user": user, "active": "movimientos",
+        "accounts": accounts, "categories": categories, "t": None,
+        "tipo_ini": tipo if tipo in ("gasto", "ingreso", "transferencia") else "gasto",
+    })
+
+
+@router.get("/movimientos/{tid}/editar", response_class=HTMLResponse)
+def editar_form(tid: int, request: Request,
+                db: Session = Depends(get_db), user: User = Depends(require_user)):
+    t = db.query(Transaction).filter(
+        Transaction.id == tid, Transaction.user_id == user.id).first()
+    if not t:
+        return RedirectResponse("/movimientos", status_code=303)
+    accounts = db.query(Account).filter(Account.user_id == user.id).order_by(Account.orden).all()
+    categories = db.query(Category).filter(
+        Category.user_id == user.id, Category.archivada == False).order_by(Category.orden).all()  # noqa: E712
+    return templates.TemplateResponse("movimiento_form.html", {
+        "request": request, "user": user, "active": "movimientos",
+        "accounts": accounts, "categories": categories, "t": t,
+        "tipo_ini": t.tipo,
+    })
+
+
 @router.post("/movimientos/nuevo")
 def crear(request: Request, concepto: str = Form(...), importe: float = Form(...),
           tipo: str = Form("gasto"), account_id: int = Form(...),
