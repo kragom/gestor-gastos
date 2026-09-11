@@ -20,6 +20,14 @@ def ajustes(request: Request, db: Session = Depends(get_db),
     })
 
 
+@router.get("/ayuda", response_class=HTMLResponse)
+def ayuda(request: Request, db: Session = Depends(get_db),
+          user: User = Depends(require_user)):
+    return templates.TemplateResponse("ayuda.html", {
+        "request": request, "user": user, "active": "ayuda",
+    })
+
+
 @router.post("/ajustes/tema")
 def set_tema(tema: str = Form(...), db: Session = Depends(get_db),
              user: User = Depends(require_user)):
