@@ -36,6 +36,27 @@
         onclick="localStorage.setItem('balance-theme','{{ val }}')">{{ lbl }}</button>
       {% endfor %}
     </form>
+
+    <div style="margin-top:20px" x-data="{ acc: (localStorage.getItem('balance-accent') || 'green') }">
+      <span class="field-label" style="display:block; font-weight:600; font-size:14px; margin-bottom:4px">Color de acento</span>
+      <p class="muted" style="font-size:13px; margin-bottom:10px">Se guarda en este dispositivo. Cuando te canses del verde, prueba otro.</p>
+      <div class="color-grid">
+        {% for name, lbl, hex in [
+          ('green','Verde','#10b981'),('teal','Turquesa','#14b8a6'),
+          ('blue','Azul','#3b82f6'),('indigo','Índigo','#6366f1'),
+          ('violet','Violeta','#8b5cf6'),('pink','Rosa','#ec4899'),
+          ('rose','Coral','#f43f5e'),('amber','Ámbar','#f59e0b'),
+          ('sage','Salvia','#6f9c6f'),('slate','Pizarra','#64748b'),
+          ('clay','Terracota','#b5794f')
+        ] %}
+        <button type="button" class="color-opt" title="{{ lbl }}" aria-label="{{ lbl }}"
+          style="background: {{ hex }}"
+          :class="{ 'on': acc === '{{ name }}' }"
+          @click="acc = '{{ name }}'; Balance.setAccent('{{ name }}')"></button>
+        {% endfor %}
+      </div>
+    </div>
+
     <div class="mov" style="margin-top:20px; border:none">
       <div class="mov-body">
         <div class="mov-title">Sesión</div>
