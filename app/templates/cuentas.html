@@ -38,7 +38,7 @@
     <div class="st-val" style="font-size:26px; margin-bottom:12px">{{ row.saldo | eur }}</div>
     <div style="margin-bottom:10px">
       <button type="button" class="btn btn-sm"
-        @click="edit={ id:{{ row.cuenta.id }}, nombre:{{ row.cuenta.nombre|tojson }}, tipo:'{{ row.cuenta.tipo }}' }">Editar</button>
+        @click='edit={{ {"id": row.cuenta.id, "nombre": row.cuenta.nombre, "tipo": row.cuenta.tipo}|tojson }}'>Editar</button>
     </div>
     <form method="post" action="/cuentas/{{ row.cuenta.id }}/inicio" style="margin-bottom:10px">
       <label class="inicio-toggle" title="Mostrar esta cuenta y sumarla en el patrimonio del inicio">
