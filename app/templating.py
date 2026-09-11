@@ -39,6 +39,7 @@ ICONS = {
     "more": '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
     "back": '<path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>',
     "logout": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/>',
+    "help": '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.6 1.2c0 1.6-2.1 2-2.1 3.3"/><circle cx="12" cy="17" r="0.6"/>',
 }
 
 # Iconos ofrecidos al crear categorías
