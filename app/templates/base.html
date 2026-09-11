@@ -23,8 +23,8 @@
   </script>
 </head>
 <body>
-<div class="app" x-data="{ open: false }">
-  <!-- Sidebar -->
+<div class="app" x-data="{ open: false, moreOpen: false }">
+  <!-- Sidebar (escritorio) -->
   <aside class="sidebar" :class="{ 'open': open }">
     <div class="brand">
       <span class="brand-logo">{{ icon('bank', 22) | safe }}</span>
@@ -66,14 +66,64 @@
       <button class="menu-btn" @click="open = !open" aria-label="Menú">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
+      <a href="/" class="topbar-logo" aria-label="Inicio">{{ icon('bank', 22) | safe }}</a>
       <span class="tagline">{{ APP_TAGLINE }}</span>
       <button class="theme-toggle" onclick="Balance.cycleTheme()" title="Cambiar tema">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></svg>
       </button>
+      <a href="/logout" class="theme-toggle topbar-logout" title="Cerrar sesión">{{ icon('logout', 20) | safe }}</a>
     </header>
     <main class="content">
       {% block content %}{% endblock %}
     </main>
+  </div>
+
+  <!-- Barra inferior (móvil) -->
+  <nav class="tabbar">
+    <a href="/" class="tab {{ 'active' if active == 'inicio' else '' }}">
+      <span class="tab-ic">{{ icon('grid', 22) | safe }}</span><span>Inicio</span>
+    </a>
+    <a href="/movimientos" class="tab {{ 'active' if active == 'movimientos' else '' }}">
+      <span class="tab-ic">{{ icon('list', 22) | safe }}</span><span>Movimientos</span>
+    </a>
+    <a href="/movimientos/nuevo" class="fab" aria-label="Añadir movimiento">{{ icon('plus', 26) | safe }}</a>
+    <a href="/graficos" class="tab {{ 'active' if active == 'graficos' else '' }}">
+      <span class="tab-ic">{{ icon('chart', 22) | safe }}</span><span>Gráficos</span>
+    </a>
+    <button type="button" class="tab" @click="moreOpen = true"
+      :class="{ 'active': moreOpen }">
+      <span class="tab-ic">{{ icon('more', 22) | safe }}</span><span>Más</span>
+    </button>
+  </nav>
+
+  <!-- Hoja inferior "Más opciones" -->
+  <div class="sheet-back" x-show="moreOpen" x-transition.opacity @click.self="moreOpen = false" style="display:none">
+    <div class="sheet" x-show="moreOpen"
+         x-transition:enter="sheet-enter" x-transition:enter-start="sheet-enter-start"
+         @click.stop>
+      <div class="sheet-grab"></div>
+      <div class="row-between" style="margin-bottom:14px">
+        <div>
+          <h3 style="font-size:20px">Más opciones</h3>
+          <small>Todas las áreas de tu economía doméstica.</small>
+        </div>
+        <button class="btn btn-icon more-close" @click="moreOpen = false" aria-label="Cerrar">✕</button>
+      </div>
+      {% set more_items = [
+        ('/presupuestos','calendar','Presupuestos'),
+        ('/reintegrables','refresh','Reintegrables'),
+        ('/gastos-extraordinarios','receipt','Gastos extraordinarios'),
+        ('/categorias','tag','Categorías'),
+        ('/cuentas','wallet','Cuentas'),
+        ('/ajustes','settings','Ajustes')
+      ] %}
+      {% for href, ic, label in more_items %}
+      <a href="{{ href }}" class="more-item">
+        <span class="more-ic">{{ icon(ic, 20) | safe }}</span>
+        <span class="more-label">{{ label }}</span>
+      </a>
+      {% endfor %}
+    </div>
   </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
