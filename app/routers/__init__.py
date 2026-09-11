@@ -1,6 +1,7 @@
 from . import (
     auth, dashboard, movimientos, graficos, presupuestos,
     reintegrables, extraordinarios, categorias, cuentas, ajustes,
+    keepalive,
 )
 
 all_routers = [
@@ -14,4 +15,5 @@ all_routers = [
     categorias.router,
     cuentas.router,
     ajustes.router,
+    keepalive.router,
 ]
