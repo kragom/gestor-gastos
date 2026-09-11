@@ -1,11 +1,11 @@
 {
-  "name": "Balance — Tu economía, con claridad",
+  "name": "Balance — Tu dinero se va igual, míralo con estilo",
   "short_name": "Balance",
   "description": "Gestor de finanzas personales",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f4f5f3",
-  "theme_color": "#1f5c46",
+  "background_color": "#080c0a",
+  "theme_color": "#0b0f0d",
   "icons": [
     { "src": "/static/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
