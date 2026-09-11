@@ -41,7 +41,8 @@
         ('extraordinarios','/gastos-extraordinarios','receipt','Gastos extraordinarios'),
         ('categorias','/categorias','tag','Categorías'),
         ('cuentas','/cuentas','wallet','Cuentas'),
-        ('ajustes','/ajustes','settings','Ajustes')
+        ('ajustes','/ajustes','settings','Ajustes'),
+        ('ayuda','/ayuda','help','Ayuda')
       ] %}
       {% for key, href, ic, label in items %}
       <a href="{{ href }}" class="nav-item {{ 'active' if active == key else '' }}">
@@ -117,7 +118,8 @@
         ('/gastos-extraordinarios','receipt','Gastos extraordinarios'),
         ('/categorias','tag','Categorías'),
         ('/cuentas','wallet','Cuentas'),
-        ('/ajustes','settings','Ajustes')
+        ('/ajustes','settings','Ajustes'),
+        ('/ayuda','help','Ayuda')
       ] %}
       {% for href, ic, label in more_items %}
       <a href="{{ href }}" class="more-item">
