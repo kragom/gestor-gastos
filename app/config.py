@@ -28,3 +28,6 @@ SYNC_DEBOUNCE_SECONDS = float(os.getenv("SYNC_DEBOUNCE_SECONDS", "4"))
 APP_NAME = "Balance"
 APP_TAGLINE = "Tu economía, con claridad."
 DEFAULT_CURRENCY = os.getenv("DEFAULT_CURRENCY", "EUR")
+
+# Repositorio de GitHub donde vive el workflow keep-alive (para renovar el token)
+GITHUB_REPO = os.getenv("GITHUB_REPO", "kragom/gestor-gastos")
