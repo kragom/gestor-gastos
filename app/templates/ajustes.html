@@ -67,6 +67,35 @@
   </div>
 </div>
 
+<div class="card" style="margin-top:18px" x-data="{ copied:false }">
+  <h3 style="font-size:18px; margin-bottom:6px">Registro rápido (iOS)</h3>
+  <p class="muted" style="font-size:13.5px; margin-bottom:12px">
+    Crea un Atajo en tu iPhone para registrar gastos en segundos, sin abrir la app.
+    Pega este token en el Atajo (cabecera <code>Authorization: Bearer …</code>).
+    <strong>Trátalo como una contraseña.</strong></p>
+
+  <label class="field"><span>Tu token</span>
+    <input id="apitoken" value="{{ api_token }}" readonly
+      onclick="this.select()" style="font-family:monospace; font-size:12px"></label>
+  <div class="flex gap" style="margin:-6px 0 14px">
+    <button type="button" class="btn btn-sm"
+      @click="navigator.clipboard.writeText(document.getElementById('apitoken').value); copied=true; setTimeout(()=>copied=false,1500)">
+      <span x-show="!copied">Copiar token</span><span x-show="copied">Copiado ✓</span></button>
+  </div>
+
+  <div class="field"><span>Endpoints</span>
+    <div class="muted" style="font-size:12.5px; line-height:1.7">
+      <div><code>GET {{ api_base }}/api/meta</code> — listas de cuentas y categorías</div>
+      <div><code>POST {{ api_base }}/api/quick</code> — crea el movimiento</div>
+    </div>
+  </div>
+  <p class="muted" style="font-size:12.5px; margin-top:10px">
+    Campos de <code>/api/quick</code>: <code>importe</code> (obligatorio), <code>concepto</code>,
+    <code>tipo</code> (gasto/ingreso), <code>categoria</code> y <code>cuenta</code> (por nombre),
+    <code>fecha</code> (AAAA-MM-DD). Recuerda: iOS no puede lanzarlo solo al pagar con Apple Pay;
+    lo abres tú desde el Atajo.</p>
+</div>
+
 <div class="card" style="margin-top:18px">
   <h3 style="font-size:18px; margin-bottom:6px">Sobre Balance</h3>
   <p class="muted" style="font-size:13.5px">{{ APP_TAGLINE }} Tus datos se guardan en privado y sincronizados — al contrario que tus ahorros. Se instala como app (PWA) desde el navegador del móvil, para tener las malas noticias siempre a mano.</p>
