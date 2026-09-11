@@ -280,6 +280,23 @@ input[type=date]::-webkit-date-and-time-value { text-align: left; }
 .cat-tile .ct-name { font-size: 13px; font-weight: 600; max-width: 100%;
   overflow-wrap: anywhere; word-break: break-word; line-height: 1.25; }
 
+/* Página de ayuda */
+.help-list { margin: 0; padding-left: 20px; }
+.help-list li { margin-bottom: 10px; line-height: 1.5; font-size: 14px; }
+.help-svc { padding: 14px 0; border-top: 1px solid var(--border); }
+.help-svc:first-of-type { border-top: none; padding-top: 0; }
+.help-svc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.help-svc-head strong { font-size: 15.5px; }
+.help-svc p { font-size: 14px; line-height: 1.5; margin: 4px 0; }
+.help-svc p.muted { font-size: 13px; }
+.help-flow { font-size: 14px; line-height: 1.6; background: var(--surface-2);
+  border-radius: var(--radius-sm); padding: 10px 14px; }
+.help-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.help-table th, .help-table td { text-align: left; padding: 9px 10px;
+  border-bottom: 1px solid var(--border); vertical-align: top; }
+.help-table th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.help-table tr:last-child td { border-bottom: none; }
+
 /* Responsive */
 @media (max-width: 900px) {
   .grid-main, .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
