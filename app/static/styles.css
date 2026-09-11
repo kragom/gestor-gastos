@@ -367,7 +367,9 @@ input[type=date]::-webkit-date-and-time-value { text-align: left; }
   .menu-btn { display: none; }
   .tagline { display: none; }
   .topbar-logo { display: grid; }
-  .topbar { justify-content: space-between; padding: 0 16px; }
+  .topbar { justify-content: space-between; padding: 0 16px;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    border-bottom: 1px solid var(--border); backdrop-filter: blur(12px); }
   .page-title { font-size: 27px; }
   .content { padding: 22px 16px calc(108px + env(safe-area-inset-bottom)); }
   .stat .st-val { font-size: 22px; }
