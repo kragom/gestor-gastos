@@ -26,7 +26,7 @@ HF_DB_FILENAME = os.getenv("HF_DB_FILENAME", "balance.db")
 SYNC_DEBOUNCE_SECONDS = float(os.getenv("SYNC_DEBOUNCE_SECONDS", "4"))
 
 APP_NAME = "Balance"
-APP_TAGLINE = "Tu economía, con claridad."
+APP_TAGLINE = "Tu dinero se va igual. Al menos, míralo irse con estilo."
 DEFAULT_CURRENCY = os.getenv("DEFAULT_CURRENCY", "EUR")
 
 # Repositorio de GitHub donde vive el workflow keep-alive (para renovar el token)
