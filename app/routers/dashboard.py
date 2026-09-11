@@ -10,7 +10,7 @@ from ..models import User, Account, Transaction, MonthClose
 from ..templating import templates
 from ..periods import parse_period, shift_period
 from ..store import save
-from ..services import finance
+from ..services import finance, recurring
 
 router = APIRouter()
 
@@ -37,6 +37,10 @@ def savings_income(db: Session, user_id: int, start, end) -> float:
 def dashboard(request: Request, mode: str = "month", period: str | None = None,
               db: Session = Depends(get_db), user: User = Depends(require_user)):
     m, anio, mes, start, end = parse_period(mode, period)
+
+    # Genera los recurrentes automáticos vencidos y recoge las propuestas
+    # pendientes de confirmación.
+    pendientes = recurring.generar(db, user)
 
     accts, patrimonio = finance.net_worth(db, user.id)
     home_rows, home_total = finance.home_accounts(db, user.id)
@@ -70,6 +74,7 @@ def dashboard(request: Request, mode: str = "month", period: str | None = None,
         "dist": dist, "dist_total": dist_total, "cat_txs": cat_txs,
         "reint_total": reint_total, "reint_count": len(reint_rows),
         "budget": budget, "cerrado": cerrado,
+        "pendientes": pendientes,
     })
 
 
