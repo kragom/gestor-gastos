@@ -23,6 +23,40 @@
   </div>
 </div>
 
+<!-- Movimientos por confirmar (recurrentes en modo propuesta) -->
+{% if pendientes %}
+<div class="card" style="margin-bottom:24px; border-left:4px solid var(--accent)">
+  <div class="row-between" style="margin-bottom:8px">
+    <h3 style="font-size:18px">{{ icon('repeat',16)|safe }} Movimientos por confirmar</h3>
+    <a class="link" href="/movimientos">Gestionar programados</a>
+  </div>
+  {% for p in pendientes %}
+  <div class="mov" style="padding-left:0; padding-right:0">
+    <span class="mov-ic" style="background:{{ (p.rec.category.color if p.rec.category else '#64748b') }}22; color:{{ (p.rec.category.color if p.rec.category else '#64748b') }}">
+      {{ icon(p.rec.category.icono if p.rec.category else ('transfer' if p.rec.tipo=='transferencia' else 'repeat'), 20)|safe }}</span>
+    <div class="mov-body">
+      <div class="mov-title">{{ p.rec.concepto }}
+        <span class="badge {{ 'badge-green' if p.rec.tipo=='ingreso' }}">{{ p.rec.tipo|upper }}</span></div>
+      <div class="mov-sub">{{ p.fecha.strftime('%d/%m/%Y') }} · {{ p.rec.account.nombre }}</div>
+    </div>
+    <div class="mov-amt {{ 'amt-pos' if p.rec.tipo=='ingreso' else '' }}">{{ p.rec.importe | eur }}</div>
+    <div class="flex gap">
+      <form action="/recurrentes/{{ p.rec.id }}/confirmar" method="post">
+        <input type="hidden" name="fecha" value="{{ p.fecha.isoformat() }}">
+        <input type="hidden" name="next" value="/">
+        <button class="btn btn-sm btn-primary" type="submit">Confirmar</button>
+      </form>
+      <form action="/recurrentes/{{ p.rec.id }}/descartar" method="post">
+        <input type="hidden" name="fecha" value="{{ p.fecha.isoformat() }}">
+        <input type="hidden" name="next" value="/">
+        <button class="btn btn-sm" type="submit">Saltar</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
 <!-- Saldos actuales -->
 <div class="row-between" style="margin-bottom:10px">
   <div>
