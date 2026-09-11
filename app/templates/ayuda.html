@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Ayuda · Balance{% endblock %}
+{% block content %}
+<div class="row-between">
+  <div>
+    <div class="eyebrow">Guía</div>
+    <h1 class="page-title">Ayuda y funcionamiento</h1>
+    <p class="page-sub">Cómo trabaja Balance por dentro y qué revisar si algún día algo falla.</p>
+  </div>
+</div>
+
+<!-- Flujo de trabajo -->
+<div class="card" style="margin-top:6px">
+  <h3 style="font-size:18px; margin-bottom:12px">Cómo se usa (flujo diario)</h3>
+  <ol class="help-list">
+    <li><strong>Añadir movimientos:</strong> con el botón <em>＋</em> (barra inferior en móvil) o «＋ Añadir». Registras gasto, ingreso o transferencia con importe, cuenta y categoría.</li>
+    <li><strong>Movimientos programados:</strong> en <em>Programados</em> defines gastos/ingresos que se repiten cada mes o año. Los <em>automáticos</em> se crean solos; los de <em>propuesta</em> te los ofrece para confirmar.</li>
+    <li><strong>Presupuestos:</strong> fijas un límite por categoría y ves cuánto llevas gastado.</li>
+    <li><strong>Reintegrables:</strong> gastos que esperas recuperar (p. ej. un adelanto). Se marcan aparte y luego como «reintegrado».</li>
+    <li><strong>Gráficos:</strong> resumen visual por categorías y evolución.</li>
+    <li><strong>Cuentas y Categorías:</strong> configuras tus bancos/efectivo y las categorías con su color e icono.</li>
+  </ol>
+</div>
+
+<!-- Arquitectura y servicios -->
+<div class="card" style="margin-top:18px">
+  <h3 style="font-size:18px; margin-bottom:6px">Qué servicios usa la app</h3>
+  <p class="muted" style="font-size:13.5px; margin-bottom:16px">
+    Balance es una PWA (app instalable) construida con FastAPI (Python). Se apoya en cuatro servicios gratuitos.
+    Todos son independientes: si uno falla, aquí sabrás cuál mirar.</p>
+
+  <div class="help-svc">
+    <div class="help-svc-head"><span class="tag-badge">Alojamiento</span><strong>Render</strong></div>
+    <p>Es el servidor donde corre la aplicación (la web que estás viendo). Si la app no carga o da error de servidor, casi siempre el problema está aquí.</p>
+    <p class="muted">Panel: <em>dashboard.render.com</em> → tu servicio web → pestaña <em>Logs</em> para ver el error, y <em>Manual Deploy</em> para reiniciarla.</p>
+  </div>
+
+  <div class="help-svc">
+    <div class="help-svc-head"><span class="tag-badge">Base de datos</span><strong>Hugging Face (Dataset)</strong></div>
+    <p>Tus datos (movimientos, cuentas, etc.) viven en un archivo SQLite que se guarda y sincroniza en un <em>dataset</em> privado de Hugging Face. Render, al reiniciarse, borra su disco; por eso la base de datos se respalda ahí para no perder nada.</p>
+    <p class="muted">Si ves datos «antiguos» o vacíos tras un reinicio, revisa que la sincronización con Hugging Face funcione (token válido).</p>
+  </div>
+
+  <div class="help-svc">
+    <div class="help-svc-head"><span class="tag-badge">Código</span><strong>GitHub</strong></div>
+    <p>El código fuente de la app está en un repositorio de GitHub. Cada vez que se sube un cambio ahí, Render se actualiza y despliega la nueva versión automáticamente.</p>
+    <p class="muted">Es también la «copia maestra» del proyecto: si Render se perdiera, se puede volver a desplegar desde aquí.</p>
+  </div>
+
+  <div class="help-svc">
+    <div class="help-svc-head"><span class="tag-badge">Mantener despierta</span><strong>GitHub Actions</strong></div>
+    <p>El plan gratuito de Render «duerme» la app si no se usa. Una tarea programada (GitHub Actions) la visita cada pocos minutos para mantenerla activa, así carga rápido cuando entras.</p>
+    <p class="muted">Si al abrir tarda 30-60 s la primera vez, es que estaba dormida; es normal y no es un fallo.</p>
+  </div>
+</div>
+
+<!-- Flujo de datos -->
+<div class="card" style="margin-top:18px">
+  <h3 style="font-size:18px; margin-bottom:12px">El camino de tus datos</h3>
+  <p class="help-flow">
+    Tu móvil/navegador → <strong>Render</strong> (la app) → guarda en SQLite → respaldo en <strong>Hugging Face</strong>.
+  </p>
+  <p class="help-flow" style="margin-top:6px">
+    Un cambio de código → <strong>GitHub</strong> → despliegue automático en <strong>Render</strong>.
+  </p>
+  <p class="help-flow" style="margin-top:6px">
+    <strong>GitHub Actions</strong> cada pocos minutos → «toca» Render → la app no se duerme.
+  </p>
+</div>
+
+<!-- Diagnóstico -->
+<div class="card" style="margin-top:18px">
+  <h3 style="font-size:18px; margin-bottom:12px">Si algo falla: por dónde empezar</h3>
+  <table class="help-table">
+    <tr><th>Síntoma</th><th>Dónde mirar</th></tr>
+    <tr><td>La web no abre o da error de servidor</td><td>Render → Logs (y reiniciar con Manual Deploy)</td></tr>
+    <tr><td>Tarda mucho solo la primera vez</td><td>Normal: estaba dormida. Revisa GitHub Actions si es constante</td></tr>
+    <tr><td>Faltan datos o parecen desactualizados</td><td>Sincronización con Hugging Face (token del dataset)</td></tr>
+    <tr><td>Subí un cambio y no aparece</td><td>GitHub (que el cambio esté subido) → Render (que el deploy terminó)</td></tr>
+    <tr><td>Cambios de diseño no se ven en el móvil</td><td>Cierra y reabre la PWA un par de veces (caché del navegador)</td></tr>
+  </table>
+  <p class="muted" style="font-size:13px; margin-top:14px">
+    Consejo de seguridad: los accesos (tokens) de GitHub, Render y Hugging Face son privados. Si alguna vez se filtran,
+    puedes regenerarlos desde el panel de cada servicio y actualizarlos en la configuración de Render.</p>
+</div>
+{% endblock %}
