@@ -6,7 +6,7 @@
   <title>Entrar · Balance</title>
   <link rel="stylesheet" href="/static/styles.css">
   <link rel="icon" href="/static/icon.svg" type="image/svg+xml">
-  <script>(function(){var s=localStorage.getItem('balance-theme')||'system';var d=s==='dark'||(s==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);})();</script>
+  <script>(function(){var s=localStorage.getItem('balance-theme')||'system';var d=s==='dark'||(s==='system'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.classList.toggle('dark',d);document.documentElement.setAttribute('data-accent',localStorage.getItem('balance-accent')||'green');})();</script>
 </head>
 <body>
 <div class="auth-wrap">
