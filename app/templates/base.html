@@ -22,6 +22,8 @@
         window.matchMedia('(prefers-color-scheme: dark)').matches);
       document.documentElement.classList.toggle('dark', dark);
       document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-accent',
+        localStorage.getItem('balance-accent') || 'green');
     })();
   </script>
 </head>
