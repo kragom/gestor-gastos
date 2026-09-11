@@ -29,39 +29,49 @@
 <div class="app" x-data="{ open: false, moreOpen: false }">
   <!-- Sidebar (escritorio) -->
   <aside class="sidebar" :class="{ 'open': open }">
-    <div class="brand">
+    <a href="/" class="brand" aria-label="Inicio">
       <span class="brand-logo">{{ icon('bank', 22) | safe }}</span>
-      <span class="brand-name">{{ APP_NAME }}</span>
-    </div>
+    </a>
     <nav class="nav">
-      {% set items = [
-        ('inicio','/','home','Inicio'),
-        ('movimientos','/movimientos','list','Movimientos'),
-        ('recurrentes','/recurrentes','repeat','Programados'),
-        ('graficos','/graficos','chart','Gráficos'),
-        ('presupuestos','/presupuestos','calendar','Presupuestos'),
-        ('reintegrables','/reintegrables','refresh','Reintegrables'),
-        ('extraordinarios','/gastos-extraordinarios','receipt','Gastos extraordinarios'),
-        ('categorias','/categorias','tag','Categorías'),
-        ('cuentas','/cuentas','wallet','Cuentas'),
-        ('ajustes','/ajustes','settings','Ajustes'),
-        ('mantenimiento','/mantenimiento','refresh','Mantenimiento'),
-        ('ayuda','/ayuda','help','Ayuda')
+      {% set groups = [
+        [
+          ('inicio','/','home','Inicio'),
+          ('movimientos','/movimientos','list','Movimientos'),
+          ('recurrentes','/recurrentes','repeat','Programados')
+        ],
+        [
+          ('graficos','/graficos','chart','Gráficos'),
+          ('presupuestos','/presupuestos','calendar','Presupuestos'),
+          ('reintegrables','/reintegrables','refresh','Reintegrables'),
+          ('extraordinarios','/gastos-extraordinarios','receipt','Gastos extraordinarios')
+        ],
+        [
+          ('categorias','/categorias','tag','Categorías'),
+          ('cuentas','/cuentas','wallet','Cuentas')
+        ],
+        [
+          ('ajustes','/ajustes','settings','Ajustes'),
+          ('mantenimiento','/mantenimiento','refresh','Mantenimiento'),
+          ('ayuda','/ayuda','help','Ayuda')
+        ]
       ] %}
-      {% for key, href, ic, label in items %}
-      <a href="{{ href }}" class="nav-item {{ 'active' if active == key else '' }}">
-        <span class="nav-ic">{{ icon(ic, 20) | safe }}</span>
-        <span>{{ label }}</span>
-      </a>
+      {% for grp in groups %}
+      <div class="nav-group">
+        {% for key, href, ic, label in grp %}
+        <a href="{{ href }}" class="nav-item {{ 'active' if active == key else '' }}" aria-label="{{ label }}">
+          <span class="nav-ic">{{ icon(ic, 20) | safe }}</span>
+          <span class="nav-tip">{{ label }}</span>
+        </a>
+        {% endfor %}
+      </div>
       {% endfor %}
     </nav>
     <div class="sidebar-user">
-      <div class="avatar">{{ (user.nombre[0] if user else 'U') | upper }}</div>
-      <div class="su-info">
-        <strong>{{ user.nombre if user else 'Invitado' }}</strong>
-        <small>{{ user.email if user else '' }}</small>
-      </div>
-      <a href="/logout" class="su-logout" title="Cerrar sesión">{{ icon('refresh',18) | safe }}</a>
+      <div class="avatar" title="{{ user.nombre if user else 'Invitado' }}">{{ (user.nombre[0] if user else 'U') | upper }}</div>
+      <a href="/logout" class="su-logout nav-item" aria-label="Cerrar sesión">
+        <span class="nav-ic">{{ icon('logout',18) | safe }}</span>
+        <span class="nav-tip">Cerrar sesión</span>
+      </a>
     </div>
   </aside>
   <div class="overlay" :class="{ 'show': open }" @click="open = false"></div>
