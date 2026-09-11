@@ -7,8 +7,41 @@
     <h1 class="page-title">Hola, {{ user.nombre.split(' ')[0] }}</h1>
     <p class="page-sub">Saldos reales y actividad del periodo, claramente separados.</p>
   </div>
-  <a class="btn btn-primary" href="/movimientos/nuevo">+ Añadir movimiento</a>
 </div>
+
+<!-- Saldos actuales (reales, no dependen del periodo) -->
+<div class="row-between" style="margin-bottom:10px">
+  <div>
+    <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.05em">Situación financiera</div>
+    <h3 style="font-size:20px">Saldos actuales</h3>
+  </div>
+  <a class="link" href="/cuentas">Ver cuentas</a>
+</div>
+<div class="hero">
+  {% if home_rows %}
+  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
+  <div class="big">{{ home_total | eur }}</div>
+  <div class="note">Suma de las cuentas que has elegido mostrar aquí.</div>
+  <div class="home-accts">
+    {% for a, saldo in home_rows %}
+    <div class="home-acct">
+      <div class="lbl">{{ icon('piggy' if a.tipo=='ahorro' else 'bank',14)|safe }} {{ a.nombre }}</div>
+      <div class="mid">{{ saldo | eur }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
+  <div class="big">{{ 0 | eur }}</div>
+  <div class="note">No has marcado ninguna cuenta para el inicio. Elígelas en <a class="link" href="/cuentas">Cuentas</a>.</div>
+  {% endif %}
+</div>
+
+<div class="divider" style="margin:30px 0 22px"></div>
+
+<!-- Actividad del periodo (todo lo de abajo depende de este selector) -->
+<div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.05em">Actividad del periodo</div>
+<h3 style="font-size:20px; margin:2px 0 14px">Selecciona el periodo a analizar</h3>
 
 <!-- Selector de periodo -->
 <div class="flex items-center justify-between gap" style="flex-wrap:wrap; margin-bottom:22px">
@@ -57,36 +90,8 @@
 </div>
 {% endif %}
 
-<!-- Saldos actuales -->
-<div class="row-between" style="margin-bottom:10px">
-  <div>
-    <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.05em">Situación financiera</div>
-    <h3 style="font-size:20px">Saldos actuales</h3>
-  </div>
-  <a class="link" href="/cuentas">Ver cuentas</a>
-</div>
-<div class="hero" style="margin-bottom:30px">
-  {% if home_rows %}
-  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
-  <div class="big">{{ home_total | eur }}</div>
-  <div class="note">Suma de las cuentas que has elegido mostrar aquí.</div>
-  <div class="home-accts">
-    {% for a, saldo in home_rows %}
-    <div class="home-acct">
-      <div class="lbl">{{ icon('piggy' if a.tipo=='ahorro' else 'bank',14)|safe }} {{ a.nombre }}</div>
-      <div class="mid">{{ saldo | eur }}</div>
-    </div>
-    {% endfor %}
-  </div>
-  {% else %}
-  <div class="lbl">{{ icon('coins',15)|safe }} Patrimonio líquido total</div>
-  <div class="big">{{ 0 | eur }}</div>
-  <div class="note">No has marcado ninguna cuenta para el inicio. Elígelas en <a class="link" href="/cuentas">Cuentas</a>.</div>
-  {% endif %}
-</div>
-
 <!-- Actividad del periodo -->
-<div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.05em">Actividad del periodo</div>
+<div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px; letter-spacing:.05em">Resumen del periodo</div>
 <h3 style="font-size:20px; margin-bottom:14px">{{ month_name(mes, anio) if mes else anio }}</h3>
 <div class="grid grid-4" style="margin-bottom:30px">
   <div class="stat"><div class="st-top">Ingresos {{ icon('chart',16)|safe }}</div><div class="st-val amt-pos">{{ ingresos | eur }}</div></div>
