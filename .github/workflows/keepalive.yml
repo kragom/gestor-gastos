@@ -1,22 +1,36 @@
 name: keep-alive
 on:
+  workflow_dispatch:          # arranque/relance de la cadena
   schedule:
-    - cron: '*/5 * * * *'      # cada 5 min (mínimo permitido por GitHub)
-  workflow_dispatch:            # permite lanzarlo a mano para probar
+    - cron: '0 */3 * * *'     # red de seguridad: cada 3h re-arranca la cadena si se cortó
+concurrency:
+  group: keepalive            # una sola cadena viva a la vez
+  cancel-in-progress: true    # un run nuevo sustituye al anterior sin dejar hueco
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 355      # tope de GitHub es 360; nos quedamos por debajo
     steps:
-      - name: Ping repetido a /healthz
+      - name: Ping continuo a /healthz (~5h40m)
         run: |
           URL="https://gestor-gastos-7u4b.onrender.com/healthz"
-          # Varios pings durante ~13 min para cubrir huecos si GitHub
-          # se salta alguna ejecución programada (Render duerme a los ~15 min).
-          for i in $(seq 1 7); do
-            if curl -fsS --retry 2 --max-time 90 "$URL"; then
-              echo " -> ping $i OK ($(date -u +%H:%M:%S) UTC)"
+          # ~5h40m pingando cada 150s; cubre de sobra el sueño de Render (~15 min)
+          for i in $(seq 1 136); do
+            if curl -fsS --retry 2 --max-time 90 "$URL" >/dev/null; then
+              echo "ping $i OK  ($(date -u +%H:%M:%S) UTC)"
             else
-              echo " -> ping $i fallido, la app puede estar arrancando ($(date -u +%H:%M:%S) UTC)"
+              echo "ping $i fallido (arrancando?)  ($(date -u +%H:%M:%S) UTC)"
             fi
-            if [ "$i" -lt 7 ]; then sleep 120; fi
+            sleep 150
           done
+
+      - name: Relanzar la cadena (siguiente ciclo)
+        if: always()
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: token ${{ secrets.KEEPALIVE_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/keepalive.yml/dispatches" \
+            -d '{"ref":"main"}' \
+            && echo "Siguiente ciclo lanzado" \
+            || echo "No se pudo relanzar (¿token KEEPALIVE_PAT caducado?)"
