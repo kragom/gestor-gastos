@@ -18,6 +18,15 @@ window.Balance = (function () {
     setTheme(next);
   }
 
+  // Acento de color (solo navegador). 'green' es el valor por defecto.
+  function applyAccent(accent) {
+    document.documentElement.setAttribute('data-accent', accent || 'green');
+  }
+  function setAccent(accent) {
+    localStorage.setItem('balance-accent', accent);
+    applyAccent(accent);
+  }
+
   // Donut chart reutilizable
   function donut(canvasId, labels, data, colors) {
     const el = document.getElementById(canvasId);
@@ -59,5 +68,5 @@ window.Balance = (function () {
     });
   }
 
-  return { setTheme, cycleTheme, donut, bars, applyTheme };
+  return { setTheme, cycleTheme, donut, bars, applyTheme, setAccent, applyAccent };
 })();
