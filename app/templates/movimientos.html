@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Movimientos · Balance{% endblock %}
 {% block content %}
-<div x-data="{ recModal:false, recEdit:null, recTipo:'gasto', recFrec:'mensual', recModo:'automatico',
-     recNuevo(){ this.recEdit=null; this.recTipo='gasto'; this.recFrec='mensual'; this.recModo='automatico'; this.recModal=true },
-     recOpen(d){ this.recEdit=d; this.recTipo=d.tipo; this.recFrec=d.frecuencia; this.recModo=d.modo; this.recModal=true } }">
+<div x-data="{}">
 
 <div class="row-between">
   <div>
@@ -86,118 +84,5 @@
 {% else %}
   <div class="card empty">{{ icon('list',34)|safe }}<p>No hay movimientos con estos filtros.</p></div>
 {% endif %}
-
-<!-- Sección: Movimientos programados / recurrentes -->
-<div id="programados" class="row-between" style="margin-top:26px; margin-bottom:6px">
-  <div>
-    <div class="eyebrow">Programados</div>
-    <h2 class="page-title" style="font-size:1.25rem">Movimientos recurrentes</h2>
-    <p class="page-sub">Gastos, ingresos o transferencias que se repiten cada mes o cada año.</p>
-  </div>
-  <button class="btn" @click="recNuevo()">+ Programar</button>
-</div>
-
-{% if recurrentes %}
-<div class="card" style="padding:0">
-  {% for r in recurrentes %}
-  <div class="mov" style="{{ '' if r.activa else 'opacity:.55' }}">
-    <span class="mov-ic" style="background:{{ (r.category.color if r.category else '#64748b') }}22; color:{{ (r.category.color if r.category else '#64748b') }}">
-      {{ icon(r.category.icono if r.category else ('transfer' if r.tipo=='transferencia' else 'repeat'), 20)|safe }}</span>
-    <div class="mov-body">
-      <div class="mov-title">{{ r.concepto }}
-        <span class="badge {{ 'badge-green' if r.tipo=='ingreso' }}">{{ r.tipo|upper }}</span>
-        <span class="tag-badge">{{ 'automático' if r.modo=='automatico' else 'a confirmar' }}</span>
-        {% if not r.activa %}<span class="tag-badge">pausado</span>{% endif %}
-      </div>
-      <div class="mov-sub">
-        {% if r.frecuencia=='mensual' %}Cada mes · día {{ r.dia_mes }}
-        {% else %}Cada año · {{ r.dia_mes }}/{{ r.mes }}{% endif %}
-        · {{ r.account.nombre }}{% if r.tipo=='transferencia' and r.cuenta_destino %} → {{ r.cuenta_destino.nombre }}{% endif %}
-      </div>
-    </div>
-    <div class="mov-amt {{ 'amt-pos' if r.tipo=='ingreso' else '' }}">{{ r.importe | eur }}</div>
-    <button class="btn btn-ghost btn-icon" @click='recOpen({{ {"id":r.id,"concepto":r.concepto,"importe":r.importe,"tipo":r.tipo,"account_id":r.account_id,"category_id":r.category_id,"cuenta_destino_id":r.cuenta_destino_id,"nota":r.nota,"es_reintegrable":r.es_reintegrable,"frecuencia":r.frecuencia,"dia_mes":r.dia_mes,"mes":r.mes,"fecha_inicio":r.fecha_inicio.isoformat(),"fecha_fin":(r.fecha_fin.isoformat() if r.fecha_fin else ""),"modo":r.modo,"activa":r.activa} | tojson }})'>⋯</button>
-  </div>
-  {% endfor %}
-</div>
-{% else %}
-<div class="card empty">{{ icon('repeat',30)|safe }}<p>No tienes movimientos programados todavía.</p></div>
-{% endif %}
-
-<!-- Modal alta/edición de recurrente -->
-<template x-if="recModal">
-  <div class="modal-back" @click.self="recModal=false">
-    <div class="modal">
-      <div class="row-between"><h3 x-text="recEdit ? 'Editar programado' : 'Nuevo programado'"></h3>
-        <button class="btn btn-ghost btn-icon" @click="recModal=false">✕</button></div>
-      <form method="post" :action="recEdit ? '/recurrentes/'+recEdit.id+'/editar' : '/recurrentes/nuevo'" class="mt">
-        <label class="field"><span>Concepto</span>
-          <input name="concepto" required :value="recEdit?recEdit.concepto:''"></label>
-        <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span>Importe</span>
-            <input name="importe" type="number" step="0.01" required :value="recEdit?recEdit.importe:''"></label>
-          <label class="field"><span>Tipo</span>
-            <select name="tipo" x-model="recTipo">
-              <option value="gasto">Gasto</option>
-              <option value="ingreso">Ingreso</option>
-              <option value="transferencia">Transferencia</option></select></label>
-        </div>
-        <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span x-text="recTipo=='transferencia' ? 'Cuenta origen' : 'Cuenta'"></span>
-            <select name="account_id" required x-init="$nextTick(()=>{ if(recEdit) $el.value=recEdit.account_id })">
-              {% for a in accounts %}<option value="{{ a.id }}">{{ a.nombre }}</option>{% endfor %}</select></label>
-          <label class="field" x-show="recTipo=='transferencia'"><span>Cuenta destino</span>
-            <select name="cuenta_destino_id" x-init="$nextTick(()=>{ if(recEdit&&recEdit.cuenta_destino_id) $el.value=recEdit.cuenta_destino_id })">
-              <option value="">Selecciona…</option>
-              {% for a in accounts %}<option value="{{ a.id }}">{{ a.nombre }}</option>{% endfor %}</select></label>
-          <label class="field" x-show="recTipo!='transferencia'"><span>Categoría</span>
-            <select name="category_id" x-init="$nextTick(()=>{ if(recEdit&&recEdit.category_id) $el.value=recEdit.category_id })">
-              <option value="">Sin categoría</option>
-              {% for c in categories %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}</select></label>
-        </div>
-        <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span>Frecuencia</span>
-            <select name="frecuencia" x-model="recFrec">
-              <option value="mensual">Cada mes</option>
-              <option value="anual">Cada año</option></select></label>
-          <label class="field"><span>Día del mes</span>
-            <input name="dia_mes" type="number" min="1" max="31" :value="recEdit?recEdit.dia_mes:1"></label>
-          <label class="field" x-show="recFrec=='anual'"><span>Mes (1-12)</span>
-            <input name="mes" type="number" min="1" max="12" :value="recEdit&&recEdit.mes?recEdit.mes:''"></label>
-        </div>
-        <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span>Desde</span>
-            <input name="fecha_inicio" type="date" :value="recEdit?recEdit.fecha_inicio:'{{ today().isoformat() }}'"></label>
-          <label class="field"><span>Hasta (opcional)</span>
-            <input name="fecha_fin" type="date" :value="recEdit?recEdit.fecha_fin:''"></label>
-        </div>
-        <label class="field"><span>Modo</span>
-          <select name="modo" x-model="recModo">
-            <option value="automatico">Automático (se crea solo)</option>
-            <option value="propuesta">Proponer para confirmar</option></select></label>
-        <label class="field" x-show="recTipo!='transferencia'" style="display:flex; align-items:center; gap:8px">
-          <input type="checkbox" name="es_reintegrable" value="1" style="width:auto" x-init="$nextTick(()=>{ if(recEdit) $el.checked=recEdit.es_reintegrable })">
-          <span style="margin:0">Reintegrable</span></label>
-        <label class="field"><span>Nota</span><textarea name="nota" x-text="recEdit?recEdit.nota:''"></textarea></label>
-        <div class="flex gap" style="justify-content:space-between; margin-top:8px">
-          <template x-if="recEdit">
-            <button type="button" class="btn"
-              @click="if(confirm('¿Pausar/activar este programado?')){ document.getElementById('rectoggle').submit() }"
-              x-text="recEdit&&recEdit.activa?'Pausar':'Activar'"></button>
-          </template>
-          <button class="btn btn-primary" type="submit" style="margin-left:auto">Guardar</button>
-        </div>
-      </form>
-      <template x-if="recEdit">
-        <div class="flex gap" style="margin-top:10px">
-          <form :action="'/recurrentes/'+recEdit.id+'/toggle'" method="post" id="rectoggle"></form>
-          <button type="button" class="btn btn-sm" style="color:var(--danger)"
-            @click="if(confirm('¿Borrar este programado? No afecta a los movimientos ya creados.')){ document.getElementById('recdel').submit() }">Borrar programado</button>
-          <form :action="'/recurrentes/'+recEdit.id+'/borrar'" method="post" id="recdel"></form>
-        </div>
-      </template>
-    </div>
-  </div>
-</template>
 </div>
 {% endblock %}
