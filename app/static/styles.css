@@ -13,6 +13,7 @@
   --danger: #f43f5e;
   --shadow: 0 1px 2px rgba(16,24,40,.04), 0 10px 30px rgba(16,24,40,.06);
   --glow: 0 8px 30px rgba(16,185,129,.28);
+  --on-brand: #04120c;
   --radius: 20px;
   --radius-sm: 14px;
   --font-head: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -32,7 +33,39 @@
   --muted-2: #62736b;
   --shadow: 0 1px 2px rgba(0,0,0,.4), 0 18px 44px rgba(0,0,0,.5);
   --glow: 0 8px 34px rgba(46,232,154,.22);
+  --on-brand: #04120c;
 }
+
+/* Acentos de color (elegibles en Ajustes, se guardan en el navegador).
+   Cada acento solo define --brand por modo; el resto se deriva. */
+html[data-accent] {
+  --brand-600: color-mix(in srgb, var(--brand) 86%, #000);
+  --brand-700: color-mix(in srgb, var(--brand) 72%, #000);
+  --glow: 0 8px 30px color-mix(in srgb, var(--brand) 38%, transparent);
+}
+html[data-accent="green"]  { --brand:#10b981; --on-brand:#04120c; }
+html[data-accent="teal"]   { --brand:#14b8a6; --on-brand:#04140f; }
+html[data-accent="blue"]   { --brand:#3b82f6; --on-brand:#f5f9ff; }
+html[data-accent="indigo"] { --brand:#6366f1; --on-brand:#f6f6ff; }
+html[data-accent="violet"] { --brand:#8b5cf6; --on-brand:#f8f5ff; }
+html[data-accent="pink"]   { --brand:#ec4899; --on-brand:#fff5fb; }
+html[data-accent="rose"]   { --brand:#f43f5e; --on-brand:#fff4f6; }
+html[data-accent="amber"]  { --brand:#f59e0b; --on-brand:#180f00; }
+html[data-accent="sage"]   { --brand:#6f9c6f; --on-brand:#f6faf6; }
+html[data-accent="slate"]  { --brand:#64748b; --on-brand:#f8fafc; }
+html[data-accent="clay"]   { --brand:#b5794f; --on-brand:#fff8f2; }
+/* Variantes en modo oscuro (tonos algo más claros) */
+html.dark[data-accent="green"]  { --brand:#2ee89a; --on-brand:#04120c; }
+html.dark[data-accent="teal"]   { --brand:#2dd4bf; --on-brand:#04140f; }
+html.dark[data-accent="blue"]   { --brand:#60a5fa; --on-brand:#04101f; }
+html.dark[data-accent="indigo"] { --brand:#818cf8; --on-brand:#080a1e; }
+html.dark[data-accent="violet"] { --brand:#a78bfa; --on-brand:#100a24; }
+html.dark[data-accent="pink"]   { --brand:#f472b6; --on-brand:#26071a; }
+html.dark[data-accent="rose"]   { --brand:#fb7185; --on-brand:#2a0710; }
+html.dark[data-accent="amber"]  { --brand:#fbbf24; --on-brand:#180f00; }
+html.dark[data-accent="sage"]   { --brand:#9ec49e; --on-brand:#0a140a; }
+html.dark[data-accent="slate"]  { --brand:#94a3b8; --on-brand:#0a0f16; }
+html.dark[data-accent="clay"]   { --brand:#cf9e77; --on-brand:#1c0f04; }
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
@@ -76,7 +109,7 @@ small { color: var(--muted); }
 .brand { display: grid; place-items: center; padding: 4px 0 14px; }
 .brand-logo { width: 44px; height: 44px; border-radius: 14px;
   background: linear-gradient(140deg, var(--brand), var(--brand-700));
-  color: #04120c; display: grid; place-items: center; box-shadow: var(--glow); }
+  color: var(--on-brand); display: grid; place-items: center; box-shadow: var(--glow); }
 .nav { display: flex; flex-direction: column; gap: 5px; flex: 1; width: 100%;
   align-items: center; overflow: visible; padding: 4px 0; }
 .nav-group { display: flex; flex-direction: column; gap: 5px; align-items: center; width: 100%;
@@ -110,7 +143,7 @@ small { color: var(--muted); }
   position: sticky; top: 0; z-index: 20; }
 .tagline { color: var(--muted); font-size: 14px; flex: 1; }
 .topbar-logo { display: none; width: 38px; height: 38px; border-radius: 11px;
-  background: linear-gradient(140deg, var(--brand), var(--brand-700)); color: #04120c; place-items: center; flex-shrink: 0; }
+  background: linear-gradient(140deg, var(--brand), var(--brand-700)); color: var(--on-brand); place-items: center; flex-shrink: 0; }
 .topbar-logout { text-decoration: none; }
 .menu-btn { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 4px; }
 .theme-toggle { background: none; border: none; color: var(--muted); cursor: pointer; padding: 6px;
@@ -146,7 +179,7 @@ small { color: var(--muted); }
   border: 1px solid var(--border); background: var(--surface); color: var(--text); font-weight: 600;
   cursor: pointer; font-size: 14px; transition: .15s; }
 .btn:hover { background: var(--surface-2); }
-.btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-700)); color: #04120c;
+.btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-700)); color: var(--on-brand);
   border-color: transparent; box-shadow: var(--glow); }
 .btn-primary:hover { filter: brightness(1.06); background: linear-gradient(135deg, var(--brand), var(--brand-700)); }
 .btn-sm { padding: 7px 12px; font-size: 13px; }
@@ -390,7 +423,7 @@ input[type=date]::-webkit-date-and-time-value { text-align: left; }
   .tab.active { color: var(--brand); }
   .fab { flex: 0 0 auto; width: 58px; height: 58px; border-radius: 50%;
     background: linear-gradient(140deg, var(--brand), var(--brand-700));
-    color: #04120c; display: grid; place-items: center; margin: -26px 4px 0; flex-shrink: 0;
+    color: var(--on-brand); display: grid; place-items: center; margin: -26px 4px 0; flex-shrink: 0;
     box-shadow: 0 6px 22px color-mix(in srgb, var(--brand) 55%, transparent); }
   .fab:hover { filter: brightness(1.06); }
 
