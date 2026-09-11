@@ -110,6 +110,43 @@ class Extraordinary(Base):
     repite_anual: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+class RecurringTransaction(Base):
+    """Plantilla de movimiento recurrente / programado.
+
+    Genera transacciones de forma periódica (mensual o anual). Según `modo`,
+    las crea automáticamente (`automatico`) o las propone en el inicio para que
+    el usuario las confirme (`propuesta`).
+    """
+    __tablename__ = "recurring_transactions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    # Datos del movimiento a generar.
+    concepto: Mapped[str] = mapped_column(String(200))
+    importe: Mapped[float] = mapped_column(Float)  # siempre positivo
+    tipo: Mapped[str] = mapped_column(String(16), default="gasto")  # gasto | ingreso | transferencia
+    account_id: Mapped[int] = mapped_column(ForeignKey("accounts.id"), index=True)
+    category_id: Mapped[int | None] = mapped_column(ForeignKey("categories.id"), nullable=True)
+    cuenta_destino_id: Mapped[int | None] = mapped_column(ForeignKey("accounts.id"), nullable=True)
+    nota: Mapped[str] = mapped_column(Text, default="")
+    es_reintegrable: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Programación.
+    frecuencia: Mapped[str] = mapped_column(String(16), default="mensual")  # mensual | anual
+    dia_mes: Mapped[int] = mapped_column(Integer, default=1)  # 1-31 (se ajusta a fin de mes)
+    mes: Mapped[int | None] = mapped_column(Integer, nullable=True)  # 1-12, solo frecuencia anual
+    fecha_inicio: Mapped[date] = mapped_column(Date, default=date.today)
+    fecha_fin: Mapped[date | None] = mapped_column(Date, nullable=True)
+    # Control.
+    activa: Mapped[bool] = mapped_column(Boolean, default=True)
+    modo: Mapped[str] = mapped_column(String(16), default="automatico")  # automatico | propuesta
+    # Fecha de la última ocurrencia ya procesada (creada o confirmada/descartada).
+    ultima_generacion: Mapped[date | None] = mapped_column(Date, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    account: Mapped["Account"] = relationship(foreign_keys=[account_id])
+    cuenta_destino: Mapped["Account"] = relationship(foreign_keys=[cuenta_destino_id])
+    category: Mapped["Category"] = relationship(foreign_keys=[category_id])
+
+
 class MonthClose(Base):
     __tablename__ = "month_close"
     id: Mapped[int] = mapped_column(primary_key=True)
