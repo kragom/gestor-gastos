@@ -1,10 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Movimientos · Balance{% endblock %}
 {% block content %}
-<div x-data="{ modal:false, edit:null, tipo:'gasto',
-     recModal:false, recEdit:null, recTipo:'gasto', recFrec:'mensual', recModo:'automatico',
-     open(d){ this.edit=d; this.tipo=d.tipo; this.modal=true },
-     nuevo(){ this.edit=null; this.tipo='gasto'; this.modal=true },
+<div x-data="{ recModal:false, recEdit:null, recTipo:'gasto', recFrec:'mensual', recModo:'automatico',
      recNuevo(){ this.recEdit=null; this.recTipo='gasto'; this.recFrec='mensual'; this.recModo='automatico'; this.recModal=true },
      recOpen(d){ this.recEdit=d; this.recTipo=d.tipo; this.recFrec=d.frecuencia; this.recModo=d.modo; this.recModal=true } }">
 
@@ -14,7 +11,7 @@
     <h1 class="page-title">Movimientos</h1>
     <p class="page-sub">Tu histórico ordenado, localizable y siempre separado por tipo.</p>
   </div>
-  <button class="btn btn-primary" @click="nuevo()">+ Añadir</button>
+  <a class="btn btn-primary" href="/movimientos/nuevo">+ Añadir</a>
 </div>
 
 <form method="get" action="/movimientos" class="card" style="margin-bottom:18px">
@@ -66,7 +63,7 @@
         <div class="mov-sub">{{ t.account.nombre }} → {{ t.cuenta_destino.nombre if t.cuenta_destino else '—' }}</div>
       </div>
       <div class="mov-amt">{{ t.importe | eur }}</div>
-      <button class="btn btn-ghost btn-icon" @click='open({{ {"id":t.id,"concepto":t.concepto,"importe":t.importe,"tipo":t.tipo,"account_id":t.account_id,"category_id":t.category_id,"cuenta_destino_id":t.cuenta_destino_id,"fecha":t.fecha.isoformat(),"nota":t.nota,"es_reintegrable":t.es_reintegrable,"reintegrado":t.reintegrado} | tojson }})'>⋯</button>
+      <a class="btn btn-ghost btn-icon" href="/movimientos/{{ t.id }}/editar">⋯</a>
     </div>
     {% else %}
     <div class="mov">
@@ -81,7 +78,7 @@
       </div>
       <div class="mov-amt {{ 'amt-pos' if t.tipo=='ingreso' else 'amt-neg' }}">
         {{ '+' if t.tipo=='ingreso' else '−' }}{{ t.importe | eur }}</div>
-      <button class="btn btn-ghost btn-icon" @click='open({{ {"id":t.id,"concepto":t.concepto,"importe":t.importe,"tipo":t.tipo,"account_id":t.account_id,"category_id":t.category_id,"cuenta_destino_id":t.cuenta_destino_id,"fecha":t.fecha.isoformat(),"nota":t.nota,"es_reintegrable":t.es_reintegrable,"reintegrado":t.reintegrado} | tojson }})'>⋯</button>
+      <a class="btn btn-ghost btn-icon" href="/movimientos/{{ t.id }}/editar">⋯</a>
     </div>
     {% endif %}
     {% endfor %}
@@ -126,65 +123,6 @@
 {% else %}
 <div class="card empty">{{ icon('repeat',30)|safe }}<p>No tienes movimientos programados todavía.</p></div>
 {% endif %}
-
-<!-- Modal alta/edición -->
-<template x-if="modal">
-  <div class="modal-back" @click.self="modal=false">
-    <div class="modal">
-      <div class="row-between"><h3 x-text="edit ? 'Editar movimiento' : 'Nuevo movimiento'"></h3>
-        <button class="btn btn-ghost btn-icon" @click="modal=false">✕</button></div>
-      <form method="post" :action="edit ? '/movimientos/'+edit.id+'/editar' : '/movimientos/nuevo'" class="mt">
-        <label class="field"><span>Concepto</span>
-          <input name="concepto" required :value="edit?edit.concepto:''"></label>
-        <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span>Importe</span>
-            <input name="importe" type="number" step="0.01" required :value="edit?edit.importe:''"></label>
-          <label class="field"><span>Tipo</span>
-            <select name="tipo" x-model="tipo">
-              <option value="gasto">Gasto</option>
-              <option value="ingreso">Ingreso</option>
-              <option value="transferencia">Transferencia</option></select></label>
-        </div>
-        <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span x-text="tipo=='transferencia' ? 'Cuenta origen' : 'Cuenta'"></span>
-            <select name="account_id" required x-init="$nextTick(()=>{ if(edit) $el.value=edit.account_id })">
-              {% for a in accounts %}<option value="{{ a.id }}">{{ a.nombre }}</option>{% endfor %}</select></label>
-          <label class="field" x-show="tipo=='transferencia'"><span>Cuenta destino</span>
-            <select name="cuenta_destino_id" x-init="$nextTick(()=>{ if(edit&&edit.cuenta_destino_id) $el.value=edit.cuenta_destino_id })">
-              <option value="">Selecciona…</option>
-              {% for a in accounts %}<option value="{{ a.id }}">{{ a.nombre }}</option>{% endfor %}</select></label>
-          <label class="field" x-show="tipo!='transferencia'"><span>Categoría</span>
-            <select name="category_id" x-init="$nextTick(()=>{ if(edit&&edit.category_id) $el.value=edit.category_id })">
-              <option value="">Sin categoría</option>
-              {% for c in categories %}<option value="{{ c.id }}">{{ c.nombre }}</option>{% endfor %}</select></label>
-        </div>
-        <div class="grid grid-2" style="gap:12px">
-          <label class="field"><span>Fecha</span>
-            <input name="fecha" type="date" :value="edit?edit.fecha:'{{ today().isoformat() }}'"></label>
-          <label class="field" x-show="tipo!='transferencia'" style="display:flex; align-items:flex-end; gap:8px; padding-bottom:12px">
-            <input type="checkbox" name="es_reintegrable" value="1" style="width:auto" x-init="$nextTick(()=>{ if(edit) $el.checked=edit.es_reintegrable })">
-            <span style="margin:0">Reintegrable</span></label>
-        </div>
-        <label class="field"><span>Nota</span><textarea name="nota" x-text="edit?edit.nota:''"></textarea></label>
-        <template x-if="edit">
-          <label class="field" style="display:flex; align-items:center; gap:8px">
-            <input type="checkbox" name="reintegrado" value="1" style="width:auto" x-init="$nextTick(()=>{ if(edit) $el.checked=edit.reintegrado })">
-            <span style="margin:0">Ya reintegrado</span></label>
-        </template>
-        <div class="flex gap" style="justify-content:space-between; margin-top:8px">
-          <template x-if="edit">
-            <button type="button" class="btn" style="color:var(--danger)"
-              @click="if(confirm('¿Borrar este movimiento?')){ document.getElementById('delform').submit() }">Borrar</button>
-          </template>
-          <button class="btn btn-primary" type="submit" style="margin-left:auto">Guardar</button>
-        </div>
-      </form>
-      <template x-if="edit">
-        <form :action="'/movimientos/'+edit.id+'/borrar'" method="post" id="delform"></form>
-      </template>
-    </div>
-  </div>
-</template>
 
 <!-- Modal alta/edición de recurrente -->
 <template x-if="recModal">
