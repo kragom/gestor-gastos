@@ -12,31 +12,44 @@
   <a class="btn btn-primary" href="/movimientos/nuevo">+ Añadir</a>
 </div>
 
-<form method="get" action="/movimientos" class="card" style="margin-bottom:18px">
+{% set filtros_activos = (f.tipo or f.cuenta or f.categoria or f.desde or f.hasta) %}
+<form method="get" action="/movimientos" class="card" style="margin-bottom:18px"
+      x-data="{ open: {{ 'true' if filtros_activos else 'false' }} }">
   <div class="flex gap" style="margin-bottom:14px">
     <input type="text" name="q" value="{{ f.q }}" placeholder="Buscar por concepto...">
     <button class="btn" type="submit">Buscar</button>
   </div>
-  <div class="filter-grid">
-    <label class="field"><span>Tipo</span>
-      <select name="tipo">
-        <option value="">Todos</option>
-        <option value="gasto" {{ 'selected' if f.tipo=='gasto' }}>Gastos</option>
-        <option value="ingreso" {{ 'selected' if f.tipo=='ingreso' }}>Ingresos</option>
-        <option value="transferencia" {{ 'selected' if f.tipo=='transferencia' }}>Transferencias</option>
-      </select></label>
-    <label class="field"><span>Cuenta</span>
-      <select name="cuenta"><option value="">Todas</option>
-        {% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if f.cuenta==a.id|string }}>{{ a.nombre }}</option>{% endfor %}
-      </select></label>
-    <label class="field"><span>Categoría</span>
-      <select name="categoria"><option value="">Todas</option>
-        {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if f.categoria==c.id|string }}>{{ c.nombre }}</option>{% endfor %}
-      </select></label>
-    <label class="field"><span>Desde</span><input type="date" name="desde" value="{{ f.desde }}"></label>
-    <label class="field"><span>Hasta</span><input type="date" name="hasta" value="{{ f.hasta }}"></label>
+  <div class="row-between" style="align-items:center">
+    <button type="button" class="btn btn-sm" @click="open = !open">
+      <span x-show="!open">Mostrar filtros{% if filtros_activos %} · activos{% endif %}</span>
+      <span x-show="open">Ocultar filtros</span>
+    </button>
+    {% if filtros_activos %}
+    <a class="link" style="font-size:13px" href="/movimientos{% if f.q %}?q={{ f.q }}{% endif %}">Limpiar filtros</a>
+    {% endif %}
   </div>
-  <div class="text-right"><button class="btn btn-primary" type="submit">Aplicar filtros</button></div>
+  <div x-show="open" x-transition style="margin-top:14px{% if not filtros_activos %}; display:none{% endif %}">
+    <div class="filter-grid">
+      <label class="field"><span>Tipo</span>
+        <select name="tipo">
+          <option value="">Todos</option>
+          <option value="gasto" {{ 'selected' if f.tipo=='gasto' }}>Gastos</option>
+          <option value="ingreso" {{ 'selected' if f.tipo=='ingreso' }}>Ingresos</option>
+          <option value="transferencia" {{ 'selected' if f.tipo=='transferencia' }}>Transferencias</option>
+        </select></label>
+      <label class="field"><span>Cuenta</span>
+        <select name="cuenta"><option value="">Todas</option>
+          {% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if f.cuenta==a.id|string }}>{{ a.nombre }}</option>{% endfor %}
+        </select></label>
+      <label class="field"><span>Categoría</span>
+        <select name="categoria"><option value="">Todas</option>
+          {% for c in categories %}<option value="{{ c.id }}" {{ 'selected' if f.categoria==c.id|string }}>{{ c.nombre }}</option>{% endfor %}
+        </select></label>
+      <label class="field"><span>Desde</span><input type="date" name="desde" value="{{ f.desde }}"></label>
+      <label class="field"><span>Hasta</span><input type="date" name="hasta" value="{{ f.hasta }}"></label>
+    </div>
+    <div class="text-right"><button class="btn btn-primary" type="submit">Aplicar filtros</button></div>
+  </div>
 </form>
 
 <div class="row-between" style="margin-bottom:6px">
