@@ -15,16 +15,25 @@ router = APIRouter()
 
 
 @router.get("/graficos", response_class=HTMLResponse)
-def graficos(request: Request, anio: int | None = None,
+def graficos(request: Request, anio: int | None = None, mes: int | None = None,
              db: Session = Depends(get_db), user: User = Depends(require_user)):
     anio = anio or date.today().year
-    start, end = date(anio, 1, 1), date(anio, 12, 31)
+    # mes 1-12 => distribución de ese mes; 0/None => todo el año.
+    if mes and 1 <= mes <= 12:
+        start, end = finance.month_bounds(anio, mes)
+        periodo_label = f"{finance.MESES[mes - 1].capitalize()} {anio}"
+    else:
+        mes = 0
+        start, end = date(anio, 1, 1), date(anio, 12, 31)
+        periodo_label = str(anio)
     dist, dist_total = finance.spend_by_category(db, user.id, start, end)
     cat_txs = finance.transactions_by_category(db, user.id, start, end)
     comp = finance.year_comparison(db, user.id, anio)
     monthly = finance.last_12_months(db, user.id, date(anio, 12, 1))
+    meses = list(enumerate(finance.MESES, start=1))
     return templates.TemplateResponse("graficos.html", {
         "request": request, "user": user, "active": "graficos",
-        "anio": anio, "dist": dist, "dist_total": dist_total, "cat_txs": cat_txs,
+        "anio": anio, "mes": mes, "periodo_label": periodo_label, "meses": meses,
+        "dist": dist, "dist_total": dist_total, "cat_txs": cat_txs,
         "comp": comp, "monthly": monthly,
     })
