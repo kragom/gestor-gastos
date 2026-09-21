@@ -411,7 +411,11 @@ input[type=date]::-webkit-date-and-time-value { text-align: left; }
 
   /* Evita el zoom automático de iOS al enfocar campos (fuente < 16px) */
   input, select, textarea { font-size: 16px; }
-  .modal { padding: 20px 18px; }
+  /* El modal arranca bajo la barra superior/notch, no centrado, para que no se
+     esconda el título; scroll interno para formularios largos. */
+  .modal-back { align-items: flex-start;
+    padding: calc(env(safe-area-inset-top) + 70px) 14px calc(env(safe-area-inset-bottom) + 20px); }
+  .modal { padding: 20px 18px; max-height: calc(100vh - env(safe-area-inset-top) - 96px); }
 
   /* Barra inferior flotante */
   .tabbar { display: flex; position: fixed; left: 12px; right: 12px;
