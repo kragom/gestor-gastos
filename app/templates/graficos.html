@@ -7,15 +7,22 @@
     <h1 class="page-title">Gráficos</h1>
     <p class="page-sub">Tendencias y desviaciones calculadas en servidor.</p>
   </div>
-  <form method="get" action="/graficos">
-    <label class="field" style="margin:0"><span>Año analizado</span>
-      <input type="number" name="anio" value="{{ anio }}" onchange="this.form.submit()" style="width:120px"></label>
+  <form method="get" action="/graficos" class="flex gap" style="align-items:flex-end">
+    <label class="field" style="margin:0"><span>Año</span>
+      <input type="number" name="anio" value="{{ anio }}" onchange="this.form.submit()" style="width:100px"></label>
+    <label class="field" style="margin:0"><span>Mes</span>
+      <select name="mes" onchange="this.form.submit()" style="width:150px">
+        <option value="0">Todo el año</option>
+        {% for num, nombre in meses %}
+        <option value="{{ num }}" {{ 'selected' if mes == num else '' }}>{{ nombre|capitalize }}</option>
+        {% endfor %}
+      </select></label>
   </form>
 </div>
 
 <div class="grid grid-2" style="margin-bottom:18px">
   <div class="card">
-    <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Distribución · {{ anio }}</div>
+    <div class="eyebrow" style="color:var(--muted); text-transform:uppercase; font-size:11px">Distribución · {{ periodo_label }}</div>
     <h3 style="font-size:19px; margin-bottom:14px">Gasto por categoría</h3>
     {% if dist %}
     <div class="flex items-center gap" style="flex-wrap:wrap; gap:24px">
