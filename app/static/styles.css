@@ -409,6 +409,10 @@ input[type=date]::-webkit-date-and-time-value { text-align: left; }
   .hero .big { font-size: 28px; }
   .filter-grid { grid-template-columns: 1fr; }
 
+  /* Evita el zoom automático de iOS al enfocar campos (fuente < 16px) */
+  input, select, textarea { font-size: 16px; }
+  .modal { padding: 20px 18px; }
+
   /* Barra inferior flotante */
   .tabbar { display: flex; position: fixed; left: 12px; right: 12px;
     bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 40;
